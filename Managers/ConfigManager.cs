@@ -1,4 +1,5 @@
 using BepInEx.Configuration;
+using UnityEngine;
 
 namespace SpawnConfig;
 
@@ -7,8 +8,10 @@ public class ConfigManager {
     internal ConfigEntry<bool> addMissingGroups = null!;
     internal ConfigEntry<double> repeatMultiplier = null!;
     internal ConfigEntry<bool> ignoreInvalidGroups = null!;
-    //internal ConfigEntry<int> enemyGroupMultiplier = null!;
-    //internal ConfigEntry<double> enemyCountMultiplier = null!;
+    internal ConfigEntry<KeyCode> menuToggleKey = null!;
+    internal ConfigEntry<KeyCode> quickSpawnKey = null!;
+    internal ConfigEntry<double> globalSpawnMultiplier = null!;
+    
     internal void Setup(ConfigFile configFile) {
         preventSpawns = configFile.Bind("General", "Prevent enemy spawning", false, new ConfigDescription("Prevent enemy spawning entirely, turning the game into a no-stakes gathering simulator or for when you want to test something in peace"));
 
@@ -18,8 +21,10 @@ public class ConfigManager {
 
         ignoreInvalidGroups = configFile.Bind("General", "Ignore groups with invalid spawnObjects", true, new ConfigDescription("If set to true, any group containing a single invalid spawn object will be ignored completely. If set to false, only the individual spawn object will be ignored and the group can still spawn as long as it contains at least one valid enemy"));
 
-        //enemyGroupMultiplier = configFile.Bind("General", "Enemy Group Multiplier", 1, new ConfigDescription("The amount of enemy groups spawned each level is multiplied by this number", new AcceptableValueRange<int>(1, 20), Array.Empty<object>()));
-
-        //enemyCountMultiplier = configFile.Bind("General", "Enemy Count Multiplier", 1.0, new ConfigDescription("The amount of individual enemies per group is multiplied by this number. Warning: Some vanilla groups consist of as many as 10 small enemies. Setting this higher than 10 is not recommended", new AcceptableValueRange<double>(1.0, 100.0), Array.Empty<object>()));
+        menuToggleKey = configFile.Bind("Interface", "Menu toggle key", KeyCode.F8, new ConfigDescription("Key to toggle the in-game configuration menu"));
+        
+        quickSpawnKey = configFile.Bind("Interface", "Quick spawn key", KeyCode.F9, new ConfigDescription("Key to quickly spawn the currently selected enemy group"));
+        
+        globalSpawnMultiplier = configFile.Bind("General", "Global spawn multiplier", 1.0, new ConfigDescription("Multiplies the overall spawn rate of all enemies. Higher values = more enemies, lower values = fewer enemies", new AcceptableValueRange<double>(0.1, 10.0)));
     }
 }

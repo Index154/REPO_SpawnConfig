@@ -9,6 +9,8 @@ using HarmonyLib;
 using Newtonsoft.Json;
 using SpawnConfig.ExtendedClasses;
 using static SpawnConfig.ListManager;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace SpawnConfig;
 
@@ -22,8 +24,6 @@ public class SpawnConfig : BaseUnityPlugin
     internal static ConfigFile Conf = null!;
     internal static readonly string configVersion = "1.0";
     internal static readonly string exportPath = Path.Combine(Paths.ConfigPath, MyPluginInfo.PLUGIN_NAME);
-    //internal static readonly string spawnObjectsCfg = Path.Combine(exportPath, "Enemies.json");
-    //internal static readonly string defaultSpawnObjectsCfg = Path.Combine(exportPath, "Defaults", "Enemies.json");
     internal static readonly string spawnGroupsCfg = Path.Combine(exportPath, "SpawnGroups.json");
     internal static readonly string explanationCfg = Path.Combine(exportPath, "SpawnGroups-Explained.json");
     internal static readonly string defaultSpawnGroupsCfg = Path.Combine(exportPath, "Defaults", "SpawnGroups.json");
@@ -43,7 +43,47 @@ public class SpawnConfig : BaseUnityPlugin
 
         Patch();
 
+        InitializeUI();
+
         Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} has loaded!");
+    }
+
+    private void InitializeUI()
+    {
+        try {
+            GameObject existingUI = GameObject.Find("SpawnConfigUI");
+            if (existingUI != null) {
+                Logger.LogInfo("Destroying existing UI GameObject");
+                Destroy(existingUI);
+            }
+            
+            GameObject uiGo = new GameObject("SpawnConfigUI");
+            Logger.LogInfo("Creating UI GameObject");
+            
+            var uiComponent = uiGo.AddComponent<Managers.SpawnConfigUI>();
+            Logger.LogInfo("UI Component added successfully");
+            
+            DontDestroyOnLoad(uiGo);
+            Logger.LogInfo("UI initialized and set to persist between scenes");
+            
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            
+        } catch (Exception ex) {
+            Logger.LogError($"Error initializing UI: {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+    
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) 
+    {
+        Logger.LogInfo($"Scene loaded: {scene.name}. Checking UI...");
+        
+        GameObject uiGo = GameObject.Find("SpawnConfigUI");
+        if (uiGo == null) {
+            Logger.LogWarning("UI GameObject was lost on scene change. Recreating...");
+            InitializeUI();
+        } else {
+            Logger.LogInfo("UI GameObject still exists after scene change.");
+        }
     }
 
     internal static void Patch()
@@ -67,28 +107,14 @@ public class SpawnConfig : BaseUnityPlugin
     }
 
     public static void ReadAndUpdateJSON(){
-
-        // Save config explanation file
         List<ExtendedEnemyExplained> explained = [new ExtendedEnemyExplained()];
         File.WriteAllText(explanationCfg, JsonConvert.SerializeObject(explained, Formatting.Indented));
 
-        // Read custom EnemySetup configs
         List<ExtendedEnemySetup> customSetupsList = JsonManager.GetEESListFromJSON(spawnGroupsCfg);
-        // Read custom group counts config
         List<ExtendedGroupCounts> customGroupCounts = JsonManager.GetEGCListFromJSON(groupsPerLevelCfg);
 
-        // Save default group counts to file
         bool stopEarly = false;
-        /*
-        File.WriteAllText(defaultGroupsPerLevelCfg, JsonManager.GroupCountsToJSON(groupCountsList));
-        if(customGroupCounts.Count < 1){
-            Logger.LogInfo("No custom group count config found! Creating default file");
-            File.WriteAllText(groupsPerLevelCfg, JsonManager.GroupCountsToJSON(groupCountsList));
-            stopEarly = true;
-        }
-        */
 
-        // Save default ExtendedEnemySetups to file for comparison purposes on next launch
         List<ExtendedEnemySetup> extendedSetupsList = extendedSetups.Select(obj => obj.Value).ToList();
         File.WriteAllText(defaultSpawnGroupsCfg, JsonManager.EESToJSON(extendedSetupsList));
         if (customSetupsList.Count < 1) {
@@ -97,19 +123,14 @@ public class SpawnConfig : BaseUnityPlugin
             stopEarly = true;
         }
 
-        // Stop early check
         if (stopEarly) return;
 
-        // Update custom setups with the default values from the source code where necessary
         foreach(ExtendedEnemySetup custom in customSetupsList){
             custom.Update();
             if (extendedSetups.ContainsKey(custom.name)) {
-                //custom.UpdateWithDefaults(extendedSetupsList.Where(objTemp => objTemp.name == custom.name).FirstOrDefault());
             }
         }
-        
 
-        // Add missing enemies from source into the custom config
         Dictionary<string, ExtendedEnemySetup> tempDict = customSetupsList.ToDictionary(obj => obj.name);
         foreach (KeyValuePair<string, ExtendedEnemySetup> source in extendedSetups) {
             if(!tempDict.ContainsKey(source.Value.name) && configManager.addMissingGroups.Value){
@@ -119,11 +140,8 @@ public class SpawnConfig : BaseUnityPlugin
         }
         customSetupsList = tempDict.Values.ToList();
 
-        // Save custom setups with new updated default values to file
         File.WriteAllText(spawnGroupsCfg, JsonManager.EESToJSON(customSetupsList));
 
-        // Replace vanilla extended setups with the custom ones so that the custom changes take effect ingame
         extendedSetups = customSetupsList.ToDictionary(obj => obj.name);
-        
     }
 }
