@@ -19,12 +19,12 @@ public class EnemyDirectorPatch {
 
     public static string PickEnemySimulation(List<EnemySetup> _enemiesList){
 		_enemiesList.Shuffle();
-		EnemySetup item = null;
+		EnemySetup? item = null;
 		float num2 = -1f;
 		foreach (EnemySetup _enemies in _enemiesList)
 		{
 			float num4 = 100f;
-			if ((bool)_enemies.rarityPreset)
+			if (_enemies != null && _enemies.rarityPreset != null)
 			{
 				num4 = _enemies.rarityPreset.chance;
 			}
@@ -36,7 +36,7 @@ public class EnemyDirectorPatch {
 				num2 = num5;
 			}
 		}
-        return item.name;
+        return item?.name ?? "Unknown";
     }
 
     [HarmonyPatch("Start")]
@@ -163,14 +163,22 @@ public class EnemyDirectorPatch {
 
             float weight = 1.0f;
             if (extendedSetups.ContainsKey(enemy.name)) weight = extendedSetups[enemy.name].GetWeight(currentDifficultyPick, __instance.enemyList);
+            
+            weight *= (float)SpawnConfig.configManager.globalSpawnMultiplier.Value;
+            
             if (weight < 1) continue;
             weightSum += weight;
 
             possibleEnemies.Add(enemy);
-            SpawnConfig.Logger.LogInfo(enemy.name + " = " + weight);
+            SpawnConfig.Logger.LogInfo(enemy.name + " = " + weight + " (after global multiplier: " + SpawnConfig.configManager.globalSpawnMultiplier.Value + ")");
         }
 
-        EnemySetup item = null;
+        if (weightSum <= 0f || possibleEnemies.Count == 0) {
+            SpawnConfig.Logger.LogInfo("No enemies can spawn (total weight: " + weightSum + ")");
+            return false;
+        }
+
+        EnemySetup? item = null;
         float randRoll = UnityEngine.Random.Range(1.0f, weightSum);
         SpawnConfig.Logger.LogInfo("Selecting a group based on random number " + randRoll + "...");
         foreach (EnemySetup enemy in possibleEnemies) {
@@ -194,7 +202,7 @@ public class EnemyDirectorPatch {
             }
         }
         
-        if(extendedSetups.ContainsKey(item.name) && extendedSetups[item.name].thisGroupOnly && !onlyOneSetup){
+        if(item != null && extendedSetups.ContainsKey(item.name) && extendedSetups[item.name].thisGroupOnly && !onlyOneSetup){
             
             List<string> names = [];
             int count = __instance.enemyList.Count;
@@ -212,7 +220,7 @@ public class EnemyDirectorPatch {
                 __instance.enemyList.Add(item2);
             }
 
-        }else{
+        }else if(item != null){
             __instance.enemyList.Add(item);
         }
         
