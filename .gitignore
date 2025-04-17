@@ -3,3 +3,4 @@ obj/
 productive/
 .vscode/
 .editorconfig
+*.bat
