@@ -13,6 +13,7 @@ using static SpawnConfig.ListManager;
 namespace SpawnConfig;
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInDependency(REPOLib.MyPluginInfo.PLUGIN_GUID, BepInDependency.DependencyFlags.HardDependency)]
 public class SpawnConfig : BaseUnityPlugin
 {
     public static SpawnConfig Instance { get; private set; } = null!;

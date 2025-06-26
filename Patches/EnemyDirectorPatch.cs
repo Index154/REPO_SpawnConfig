@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using HarmonyLib;
+using REPOLib.Modules;
 using SpawnConfig.ExtendedClasses;
 using static SpawnConfig.ListManager;
 using UnityEngine;
-using System.Linq;
-using Unity.VisualScripting;
 
 namespace SpawnConfig.Patches;
 
@@ -22,17 +21,17 @@ public class EnemyDirectorPatch {
 		float num2 = -1f;
 		foreach (EnemySetup _enemies in _enemiesList)
 		{
-			float num4 = 100f;
+			float num5 = 100f;
 			if ((bool)_enemies.rarityPreset)
 			{
-				num4 = _enemies.rarityPreset.chance;
+				num5 = _enemies.rarityPreset.chance;
 			}
-			float maxInclusive = Mathf.Max(0f, num4);
-			float num5 = Random.Range(0f, maxInclusive);
-			if (num5 > num2)
+			float maxInclusive = Mathf.Max(0f, num5);
+			float num6 = Random.Range(0f, maxInclusive);
+			if (num6 > num2)
 			{
 				item = _enemies;
-				num2 = num5;
+				num2 = num6;
 			}
 		}
         return item.name;
@@ -40,10 +39,18 @@ public class EnemyDirectorPatch {
 
     [HarmonyPatch("Start")]
     [HarmonyPostfix]
+    public static void SetupAfterBundles(EnemyDirector __instance)
+    {
+        REPOLib.BundleLoader.OnAllBundlesLoaded += () =>
+        {
+            SetupOnStart(__instance);
+        };
+    }
     public static void SetupOnStart(EnemyDirector __instance){
 
         // Only do it once
-        if (!setupDone) {
+        if (!setupDone)
+        {
             List<EnemySetup>[] enemiesDifficulties = [__instance.enemiesDifficulty3, __instance.enemiesDifficulty2, __instance.enemiesDifficulty1];
 
             // Go through existing EnemySetups & the contained spawnObjects and construct extended objects with default values
@@ -67,24 +74,26 @@ public class EnemyDirectorPatch {
                 foreach (EnemySetup enemySetup in enemiesDifficulty){
 
                     // Make list of functional enemy spawnObjects
-                    foreach (GameObject spawnObject in enemySetup.spawnObjects){
+                    foreach (GameObject spawnObject in enemySetup.spawnObjects)
+                    {
                         spawnObject.name = spawnObject.name;
                         ExtendedSpawnObject extendedObj = new(spawnObject);
-                        if (!spawnObjectsDict.ContainsKey(spawnObject.name)){
+                        if (!spawnObjectsDict.ContainsKey(spawnObject.name))
+                        {
                             spawnObjectsDict.Add(spawnObject.name, spawnObject);
                             //extendedSpawnObjects.Add(extendedObj.name, extendedObj);
                         }
                     }
-                    
+
                     // Make list of extended enemy setups
                     ExtendedEnemySetup extendedSetup = new(enemySetup, x);
-                    if(!extendedSetups.ContainsKey(enemySetup.name)){
+                    if (!extendedSetups.ContainsKey(enemySetup.name)){
                         extendedSetups.Add(extendedSetup.name, extendedSetup);
                     }
                 }
                 x--;
             }
-            
+
             // Log default spawnObjects
             SpawnConfig.Logger.LogInfo("Found the following enemy spawnObjects:");
             foreach (KeyValuePair<string, GameObject> entry in spawnObjectsDict){
@@ -92,49 +101,57 @@ public class EnemyDirectorPatch {
             }
 
             // Get default enemy group counts per level
-            for(float y = 0.0f; y < 1.1f; y+=0.1f){
+            /*
+            for (float y = 0.0f; y < 1.1f; y += 0.1f){
                 difficulty3Counts.Add((int)__instance.amountCurve3.Evaluate(y));
                 difficulty2Counts.Add((int)__instance.amountCurve2.Evaluate(y));
                 difficulty1Counts.Add((int)__instance.amountCurve1.Evaluate(y));
             }
-            for(int z = 0; z < difficulty1Counts.Count; z++){
+            for (int z = 0; z < difficulty1Counts.Count; z++){
                 groupCountsList.Add(new ExtendedGroupCounts(z));
             }
+            */
 
             // Read / update JSON configs
             SpawnConfig.ReadAndUpdateJSON();
 
             // Deal with invalid enemy names
             List<string> invalidGroups = [];
-            foreach (KeyValuePair<string, ExtendedEnemySetup> ext in extendedSetups) {
+            foreach (KeyValuePair<string, ExtendedEnemySetup> ext in extendedSetups)
+            {
                 bool invalid = false;
                 int index = 0;
                 List<int> objsToRemove = [];
-                foreach(string sp in ext.Value.spawnObjects){
-                    if(!spawnObjectsDict.ContainsKey(sp)) {
-                        if(SpawnConfig.configManager.ignoreInvalidGroups.Value){
-                            SpawnConfig.Logger.LogError("Unable to resolve enemy name \"" + sp + "\" in group \"" + ext.Value.name+ "\"! This group will be ignored");
+                foreach (string sp in ext.Value.spawnObjects)
+                {
+                    if (!spawnObjectsDict.ContainsKey(sp))
+                    {
+                        if (SpawnConfig.configManager.ignoreInvalidGroups.Value)
+                        {
+                            SpawnConfig.Logger.LogError("Unable to resolve enemy name \"" + sp + "\" in group \"" + ext.Value.name + "\"! This group will be ignored");
                             invalid = true;
-                        }else{
-                            SpawnConfig.Logger.LogError("Unable to resolve enemy name \"" + sp + "\" in group \"" + ext.Value.name+ "\"! This enemy will be removed but the group can still spawn");
+                        }
+                        else
+                        {
+                            SpawnConfig.Logger.LogError("Unable to resolve enemy name \"" + sp + "\" in group \"" + ext.Value.name + "\"! This enemy will be removed but the group can still spawn");
                             objsToRemove.Add(index);
                         }
                     }
                     index++;
                 }
                 // Remove invalid objects from group (from highest to lowest index)
-                for(int i = objsToRemove.Count - 1; i > -1; i--){
+                for (int i = objsToRemove.Count - 1; i > -1; i--){
                     ext.Value.spawnObjects.RemoveAt(objsToRemove[i]);
                 }
                 // Group is invalid if no objects remain
-                if(ext.Value.spawnObjects.Count < 1 && !invalid){
+                if (ext.Value.spawnObjects.Count < 1 && !invalid){
                     invalid = true;
-                    SpawnConfig.Logger.LogError("The group \"" + ext.Value.name+ "\" contains no valid enemies! This group will be ignored");
+                    SpawnConfig.Logger.LogError("The group \"" + ext.Value.name + "\" contains no valid enemies! This group will be ignored");
                 }
-                if(invalid) invalidGroups.Add(ext.Key);
+                if (invalid) invalidGroups.Add(ext.Key);
             }
             // Remove invalid groups
-            foreach (string sp in invalidGroups) {
+            foreach (string sp in invalidGroups){
                 extendedSetups.Remove(sp);
             }
             setupDone = true;
@@ -277,28 +294,31 @@ public class EnemyDirectorPatch {
                 randRoll -= weight;
             }
         }
-        
+
         // Replace all other EnemySetups with empty objects if only this one should spawn
-        if(extendedSetups.ContainsKey(item.name) && extendedSetups[item.name].thisGroupOnly && !onlyOneSetup){
-            
+        if (extendedSetups.ContainsKey(item.name) && extendedSetups[item.name].thisGroupOnly && !onlyOneSetup)
+        {
             List<string> names = [];
             int count = __instance.enemyList.Count;
-            foreach(EnemySetup enemy in __instance.enemyList){
+            foreach (EnemySetup enemy in __instance.enemyList)
+            {
                 names.Add(enemy.name);
             }
             __instance.enemyList.Clear();
             __instance.enemyList.Add(item);
             onlyOneSetup = true;
 
-            for(int i = 0; i < count; i++){
+            for (int i = 0; i < count; i++)
+            {
                 EnemySetup item2 = ScriptableObject.CreateInstance<EnemySetup>();
                 item2.name = names[i];
                 item2.spawnObjects = [];
                 __instance.enemyList.Add(item2);
             }
-
-        }else{
+        }
+        else{
             __instance.enemyList.Add(item);
+            // enemyListCurrent does not seem to serve any purpose yet so far so I left it out
         }
         
         return false;

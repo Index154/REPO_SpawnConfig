@@ -5,7 +5,7 @@
         <AssemblyName>Index154.SpawnConfig</AssemblyName>
         <Product>SpawnConfig</Product>
         <!-- Change to whatever version you're currently on. -->
-        <Version>1.1.3</Version>
+        <Version>1.1.4</Version>
     </PropertyGroup>
 
     <!-- Project Properties -->
@@ -48,6 +48,7 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="R.E.P.O.GameLibs.Steam" Version="*-*" />
         <PackageReference Include="UnityEngine.Modules" Version="2022.3.21" IncludeAssets="compile" PrivateAssets="all"/>
+        <PackageReference Include="Zehs.REPOLib" Version="2.*" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
