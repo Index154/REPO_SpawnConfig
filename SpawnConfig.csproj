@@ -5,7 +5,7 @@
         <AssemblyName>Index154.SpawnConfig</AssemblyName>
         <Product>SpawnConfig</Product>
         <!-- Change to whatever version you're currently on. -->
-        <Version>1.1.4</Version>
+        <Version>1.2.0</Version>
     </PropertyGroup>
 
     <!-- Project Properties -->
@@ -33,11 +33,7 @@
     <PropertyGroup>
         <DebugSymbols>true</DebugSymbols>
         <DebugType>embedded</DebugType>
-        <!--
-        Trim the project path to prevent players from potentially
-        viewing Private Information in stack traces.
-        -->
-        <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
+        <PathMap>$(MSBuildThisFileDirectory)=./</PathMap>
     </PropertyGroup>
 
     <!-- Primary Package References -->

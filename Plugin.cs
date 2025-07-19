@@ -26,10 +26,11 @@ public class SpawnConfig : BaseUnityPlugin
     //internal static readonly string spawnObjectsCfg = Path.Combine(exportPath, "Enemies.json");
     //internal static readonly string defaultSpawnObjectsCfg = Path.Combine(exportPath, "Defaults", "Enemies.json");
     internal static readonly string spawnGroupsCfg = Path.Combine(exportPath, "SpawnGroups.json");
-    internal static readonly string explanationCfg = Path.Combine(exportPath, "SpawnGroups-Explained.json");
-    internal static readonly string defaultSpawnGroupsCfg = Path.Combine(exportPath, "Defaults", "SpawnGroups.json");
+    internal static readonly string spawnGroupsExplainedCfg = Path.Combine(exportPath, "SpawnGroups-Explained.json");
+    internal static readonly string defaultSpawnGroupsCfg = Path.Combine(exportPath, "Defaults", "SpawnGroups-Readonly.json");
     internal static readonly string groupsPerLevelCfg = Path.Combine(exportPath, "GroupsPerLevel.json");
-    internal static readonly string defaultGroupsPerLevelCfg = Path.Combine(exportPath, "Defaults", "GroupsPerLevel.json");
+    internal static readonly string groupsPerLevelExplainedCfg = Path.Combine(exportPath, "GroupsPerLevel-Explained.json");
+    internal static readonly string defaultGroupsPerLevelCfg = Path.Combine(exportPath, "Defaults", "GroupsPerLevel-Readonly.json");
 
     private void Awake()
     {
@@ -69,25 +70,28 @@ public class SpawnConfig : BaseUnityPlugin
 
     public static void ReadAndUpdateJSON(){
 
-        // Save config explanation file
-        List<ExtendedEnemyExplained> explained = [new ExtendedEnemyExplained()];
-        File.WriteAllText(explanationCfg, JsonConvert.SerializeObject(explained, Formatting.Indented));
+        // Save config explanation files
+        List<ExtendedEnemyExplained> spawnGroupsExplained = [new ExtendedEnemyExplained()];
+        File.WriteAllText(spawnGroupsExplainedCfg, JsonConvert.SerializeObject(spawnGroupsExplained, Formatting.Indented));
+        File.WriteAllText(groupsPerLevelExplainedCfg, Explanations.groupsPerLevelExplanation);
 
         // Read custom EnemySetup configs
         List<ExtendedEnemySetup> customSetupsList = JsonManager.GetEESListFromJSON(spawnGroupsCfg);
         // Read custom group counts config
-        List<ExtendedGroupCounts> customGroupCounts = JsonManager.GetEGCListFromJSON(groupsPerLevelCfg);
+        List<ExtendedGroupCounts> customGroupCountsList = JsonManager.GetEGCListFromJSON(groupsPerLevelCfg);
 
         // Save default group counts to file
-        bool stopEarly = false;
-        /*
-        File.WriteAllText(defaultGroupsPerLevelCfg, JsonManager.GroupCountsToJSON(groupCountsList));
-        if(customGroupCounts.Count < 1){
+        List<ExtendedGroupCounts> extendedGroupCountsList = extendedGroupCounts.Select(obj => obj.Value).ToList();
+        File.WriteAllText(defaultGroupsPerLevelCfg, JsonManager.GroupCountsToJSON(extendedGroupCountsList));
+        if(customGroupCountsList.Count < 1){
             Logger.LogInfo("No custom group count config found! Creating default file");
-            File.WriteAllText(groupsPerLevelCfg, JsonManager.GroupCountsToJSON(groupCountsList));
-            stopEarly = true;
+            File.WriteAllText(groupsPerLevelCfg, JsonManager.GroupCountsToJSON(extendedGroupCountsList));
+            customGroupCountsList = extendedGroupCountsList;
         }
-        */
+        if(customGroupCountsList[0].level != 1){
+            Logger.LogError("Your custom group count config must contain at least a valid level 1 entry!");
+            customGroupCountsList = extendedGroupCountsList;
+        }
 
         // Save default ExtendedEnemySetups to file for comparison purposes on next launch
         List<ExtendedEnemySetup> extendedSetupsList = extendedSetups.Select(obj => obj.Value).ToList();
@@ -95,36 +99,37 @@ public class SpawnConfig : BaseUnityPlugin
         if (customSetupsList.Count < 1) {
             Logger.LogInfo("No custom spawn groups config found! Creating default file");
             File.WriteAllText(spawnGroupsCfg, JsonManager.EESToJSON(extendedSetupsList));
-            stopEarly = true;
+            customSetupsList = extendedSetupsList;
         }
 
-        // Stop early check
-        if (stopEarly) return;
-
         // Update custom setups with the default values from the source code where necessary
+        /*
         foreach(ExtendedEnemySetup custom in customSetupsList){
             custom.Update();
             if (extendedSetups.ContainsKey(custom.name)) {
-                //custom.UpdateWithDefaults(extendedSetupsList.Where(objTemp => objTemp.name == custom.name).FirstOrDefault());
+                custom.UpdateWithDefaults(extendedSetupsList.Where(objTemp => objTemp.name == custom.name).FirstOrDefault());
             }
         }
-        
+        */
 
         // Add missing enemies from source into the custom config
+        bool addedMissing = false;
         Dictionary<string, ExtendedEnemySetup> tempDict = customSetupsList.ToDictionary(obj => obj.name);
         foreach (KeyValuePair<string, ExtendedEnemySetup> source in extendedSetups) {
             if(!tempDict.ContainsKey(source.Value.name) && configManager.addMissingGroups.Value){
                 Logger.LogInfo("Adding missing entry to custom config: " + source.Value.name);
                 tempDict.Add(source.Value.name, source.Value);
+                addedMissing = true;
             }
         }
         customSetupsList = tempDict.Values.ToList();
 
-        // Save custom setups with new updated default values to file
-        File.WriteAllText(spawnGroupsCfg, JsonManager.EESToJSON(customSetupsList));
+        // Update the file if something was added
+        if(addedMissing) File.WriteAllText(spawnGroupsCfg, JsonManager.EESToJSON(customSetupsList));
 
-        // Replace vanilla extended setups with the custom ones so that the custom changes take effect ingame
+        // Replace vanilla values
         extendedSetups = customSetupsList.ToDictionary(obj => obj.name);
+        extendedGroupCounts = customGroupCountsList.ToDictionary(obj => obj.level);
         
     }
 }

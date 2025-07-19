@@ -3,16 +3,27 @@ using static SpawnConfig.ListManager;
 
 namespace SpawnConfig.ExtendedClasses;
 
-public class ExtendedGroupCounts {
+public class ExtendedGroupCounts
+{
 
     public int level = 1;
-    public List<List<int>> possibleGroupCounts = [];
+    public List<GroupCountEntry> possibleGroupCounts = [];
 
-    public ExtendedGroupCounts(int i){
-        
-        level = i + 1;
-        possibleGroupCounts.Add([difficulty1Counts[i], difficulty2Counts[i], difficulty3Counts[i]]);
-        
+    public ExtendedGroupCounts(int i)
+    {
+        level = levelNumbers[i];
+        possibleGroupCounts.Add(new GroupCountEntry(i));
     }
 
+}
+
+public class GroupCountEntry
+{
+    public List<int> counts = [];
+    public int weight = 1;
+
+    public GroupCountEntry(int i)
+    {
+        counts = [difficulty1Counts[i], difficulty2Counts[i], difficulty3Counts[i]];
+    }
 }

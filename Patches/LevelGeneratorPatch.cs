@@ -62,7 +62,7 @@ public class LevelGeneratorPatch {
                         amountChange--;
                     }
                 }else if(amountChange < 0){
-                    while(amountChange < 0 && enemySetup.spawnObjects.Count > 1){
+                    while(amountChange < 0 && enemySetup.spawnObjects.Count > 0){
                         enemySetup.spawnObjects.RemoveAt(PickNonDirector(enemySetup));
                         amountChange++;
                     }
@@ -81,8 +81,10 @@ public class LevelGeneratorPatch {
         }
         string logString = "";
         foreach (KeyValuePair<string, int> obj in spawnObjects){
-            if(logString != "") logString += ", ";
-            logString += obj.Key + " x " + obj.Value;
+            if (!obj.Key.Contains("Director")){
+                if (logString != "") logString += ", ";
+                logString += obj.Key + " x " + obj.Value;
+            }
         }
         if(logString == "") logString = "No spawns or they were prevented for this level";
 

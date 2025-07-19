@@ -87,19 +87,27 @@ public class JsonManager {
             writer.Formatting = Formatting.Indented;
             writer.WriteStartArray();
 
-            foreach(ExtendedGroupCounts gc in gcList){
+            foreach(ExtendedGroupCounts groupCounts in gcList){
                 writer.Formatting = Formatting.Indented;
                 writer.WriteStartObject();
                 writer.WritePropertyName("level");
-                writer.WriteValue(gc.level);
+                writer.WriteValue(groupCounts.level);
                 writer.WritePropertyName("possibleGroupCounts");
                 writer.WriteStartArray();
-                writer.WriteStartArray();
-                writer.Formatting = Formatting.None;
-                writer.WriteValue(gc.possibleGroupCounts[0][0]);
-                writer.WriteValue(gc.possibleGroupCounts[0][1]);
-                writer.WriteValue(gc.possibleGroupCounts[0][2]);
-                writer.WriteEndArray();
+                foreach (GroupCountEntry groupCountEntry in groupCounts.possibleGroupCounts)
+                {
+                    writer.WriteStartObject();
+                    writer.Formatting = Formatting.None;
+                    writer.WritePropertyName("counts");
+                    writer.WriteStartArray();
+                    writer.WriteValue(groupCountEntry.counts[0]);
+                    writer.WriteValue(groupCountEntry.counts[1]);
+                    writer.WriteValue(groupCountEntry.counts[2]);
+                    writer.WriteEndArray();
+                    writer.WritePropertyName("weight");
+                    writer.WriteValue(groupCountEntry.weight);
+                    writer.WriteEndObject();
+                }
                 writer.Formatting = Formatting.Indented;
                 writer.WriteEndArray();
                 writer.WriteEndObject();
