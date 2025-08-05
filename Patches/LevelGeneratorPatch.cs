@@ -28,6 +28,7 @@ public class LevelGeneratorPatch {
     }
 
     [HarmonyPatch("EnemySpawn")]
+    //[HarmonyPriority(Priority.High)]
     [HarmonyPrefix]
     public static void LogAndModifySpawns(EnemySetup enemySetup, Vector3 position, LevelGenerator __instance){
 
@@ -86,14 +87,15 @@ public class LevelGeneratorPatch {
                 logString += obj.Key + " x " + obj.Value;
             }
         }
-        if(logString == "") logString = "No spawns or they were prevented for this level";
+        if(logString == "") logString = "No spawn objects found in group...";
 
-        SpawnConfig.Logger.LogInfo("Attempting to spawn: [" + enemySetup.name + "]   (" + logString.Replace("Enemy - ", "") + ")");
         if(SpawnConfig.configManager.preventSpawns.Value){
             // "Safe" way of doing it without having to skip the original PickEnemies logic
             enemySetup.spawnObjects.Clear();
-            SpawnConfig.Logger.LogInfo("Forcibly prevented all spawns!");
+            SpawnConfig.Logger.LogInfo("Forcibly prevented enemy spawn!");
             return;
+        }else{
+            SpawnConfig.Logger.LogInfo("Spawning [" + enemySetup.name + "]   (" + logString.Replace("Enemy - ", "") + ")");
         }
     }
 

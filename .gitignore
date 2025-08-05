@@ -1,5 +1,6 @@
 bin/
 obj/
-productive/
+Prod/Index154.SpawnConfig.dll
+Prod/LICENSE.md
 .vscode/
 .editorconfig

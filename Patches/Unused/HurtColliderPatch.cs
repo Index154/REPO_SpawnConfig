@@ -4,6 +4,8 @@ namespace SpawnConfig.Patches;
 
 [HarmonyPatch(typeof(HurtCollider))]
 
+// Early attempt at modifying enemy damage based on name but seems inconsistent!
+
 public class HurtColliderPatch {
 
     [HarmonyPatch("OnEnable")]
@@ -20,5 +22,3 @@ public class HurtColliderPatch {
 
     }
 }*/
-
-// Early attempt at modifying enemy damage based on name but seems inconsistent!

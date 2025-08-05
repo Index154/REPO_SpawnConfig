@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,7 +5,6 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using Newtonsoft.Json;
 using SpawnConfig.ExtendedClasses;
 using static SpawnConfig.ListManager;
 
@@ -19,18 +17,21 @@ public class SpawnConfig : BaseUnityPlugin
     public static SpawnConfig Instance { get; private set; } = null!;
     internal new static ManualLogSource Logger { get; private set; } = null!;
     internal static Harmony? Harmony { get; set; }
+    
     internal static ConfigManager configManager = null!;
     internal static ConfigFile Conf = null!;
     internal static readonly string configVersion = "1.0";
+
     internal static readonly string exportPath = Path.Combine(Paths.ConfigPath, MyPluginInfo.PLUGIN_NAME);
-    //internal static readonly string spawnObjectsCfg = Path.Combine(exportPath, "Enemies.json");
-    //internal static readonly string defaultSpawnObjectsCfg = Path.Combine(exportPath, "Defaults", "Enemies.json");
-    internal static readonly string spawnGroupsCfg = Path.Combine(exportPath, "SpawnGroups.json");
-    internal static readonly string spawnGroupsExplainedCfg = Path.Combine(exportPath, "SpawnGroups-Explained.json");
-    internal static readonly string defaultSpawnGroupsCfg = Path.Combine(exportPath, "Defaults", "SpawnGroups-Readonly.json");
-    internal static readonly string groupsPerLevelCfg = Path.Combine(exportPath, "GroupsPerLevel.json");
-    internal static readonly string groupsPerLevelExplainedCfg = Path.Combine(exportPath, "GroupsPerLevel-Explained.json");
-    internal static readonly string defaultGroupsPerLevelCfg = Path.Combine(exportPath, "Defaults", "GroupsPerLevel-Readonly.json");
+    internal static readonly string spawnGroupsPath = Path.Combine(exportPath, "SpawnGroups.json");
+    internal static readonly string defaultSpawnGroupsPath = Path.Combine(exportPath, "Defaults", "SpawnGroups-Readonly.json");
+    internal static readonly string groupsPerLevelPath = Path.Combine(exportPath, "GroupsPerLevel.json");
+    internal static readonly string defaultGroupsPerLevelPath = Path.Combine(exportPath, "Defaults", "GroupsPerLevel-Readonly.json");
+
+    internal static readonly string groupsPerLevelExplainedPath = Path.Combine(exportPath, "GroupsPerLevel-Explained.json");    // Legacy
+    internal static readonly string spawnGroupsExplainedPath = Path.Combine(exportPath, "SpawnGroups-Explained.json");    // Legacy
+
+    public static bool missingProperties = false;
 
     private void Awake()
     {
@@ -70,22 +71,17 @@ public class SpawnConfig : BaseUnityPlugin
 
     public static void ReadAndUpdateJSON(){
 
-        // Save config explanation files
-        List<ExtendedEnemyExplained> spawnGroupsExplained = [new ExtendedEnemyExplained()];
-        File.WriteAllText(spawnGroupsExplainedCfg, JsonConvert.SerializeObject(spawnGroupsExplained, Formatting.Indented));
-        File.WriteAllText(groupsPerLevelExplainedCfg, Explanations.groupsPerLevelExplanation);
-
         // Read custom EnemySetup configs
-        List<ExtendedEnemySetup> customSetupsList = JsonManager.GetEESListFromJSON(spawnGroupsCfg);
+        List<ExtendedEnemySetup> customSetupsList = JsonManager.GetEESListFromJSON(spawnGroupsPath);
         // Read custom group counts config
-        List<ExtendedGroupCounts> customGroupCountsList = JsonManager.GetEGCListFromJSON(groupsPerLevelCfg);
+        List<ExtendedGroupCounts> customGroupCountsList = JsonManager.GetEGCListFromJSON(groupsPerLevelPath);
 
         // Save default group counts to file
         List<ExtendedGroupCounts> extendedGroupCountsList = extendedGroupCounts.Select(obj => obj.Value).ToList();
-        File.WriteAllText(defaultGroupsPerLevelCfg, JsonManager.GroupCountsToJSON(extendedGroupCountsList));
+        File.WriteAllText(defaultGroupsPerLevelPath, JsonManager.GroupCountsToJSON(extendedGroupCountsList));
         if(customGroupCountsList.Count < 1){
             Logger.LogInfo("No custom group count config found! Creating default file");
-            File.WriteAllText(groupsPerLevelCfg, JsonManager.GroupCountsToJSON(extendedGroupCountsList));
+            File.WriteAllText(groupsPerLevelPath, JsonManager.GroupCountsToJSON(extendedGroupCountsList));
             customGroupCountsList = extendedGroupCountsList;
         }
         if(customGroupCountsList[0].level != 1){
@@ -95,41 +91,44 @@ public class SpawnConfig : BaseUnityPlugin
 
         // Save default ExtendedEnemySetups to file for comparison purposes on next launch
         List<ExtendedEnemySetup> extendedSetupsList = extendedSetups.Select(obj => obj.Value).ToList();
-        File.WriteAllText(defaultSpawnGroupsCfg, JsonManager.EESToJSON(extendedSetupsList));
+        File.WriteAllText(defaultSpawnGroupsPath, JsonManager.EESToJSON(extendedSetupsList));
         if (customSetupsList.Count < 1) {
             Logger.LogInfo("No custom spawn groups config found! Creating default file");
-            File.WriteAllText(spawnGroupsCfg, JsonManager.EESToJSON(extendedSetupsList));
+            File.WriteAllText(spawnGroupsPath, JsonManager.EESToJSON(extendedSetupsList));
             customSetupsList = extendedSetupsList;
         }
 
         // Update custom setups with the default values from the source code where necessary
-        /*
+        bool updatedFile = false;
         foreach(ExtendedEnemySetup custom in customSetupsList){
-            custom.Update();
-            if (extendedSetups.ContainsKey(custom.name)) {
+            bool changedSomething = custom.Update();
+            if (changedSomething) updatedFile = true;
+            /*if (extendedSetups.ContainsKey(custom.name)) {
                 custom.UpdateWithDefaults(extendedSetupsList.Where(objTemp => objTemp.name == custom.name).FirstOrDefault());
-            }
+            }*/
         }
-        */
 
         // Add missing enemies from source into the custom config
-        bool addedMissing = false;
         Dictionary<string, ExtendedEnemySetup> tempDict = customSetupsList.ToDictionary(obj => obj.name);
         foreach (KeyValuePair<string, ExtendedEnemySetup> source in extendedSetups) {
             if(!tempDict.ContainsKey(source.Value.name) && configManager.addMissingGroups.Value){
                 Logger.LogInfo("Adding missing entry to custom config: " + source.Value.name);
                 tempDict.Add(source.Value.name, source.Value);
-                addedMissing = true;
+                updatedFile = true;
             }
         }
         customSetupsList = tempDict.Values.ToList();
 
-        // Update the file if something was added
-        if(addedMissing) File.WriteAllText(spawnGroupsCfg, JsonManager.EESToJSON(customSetupsList));
+        // Update the file if something was changed
+        if(updatedFile || missingProperties) File.WriteAllText(spawnGroupsPath, JsonManager.EESToJSON(customSetupsList));
 
         // Replace vanilla values
         extendedSetups = customSetupsList.ToDictionary(obj => obj.name);
         extendedGroupCounts = customGroupCountsList.ToDictionary(obj => obj.level);
+        
+        // Delete legacy files
+        File.Delete(spawnGroupsExplainedPath);
+        File.Delete(groupsPerLevelExplainedPath);
         
     }
 }

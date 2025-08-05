@@ -4,31 +4,45 @@ using System.Text;
 using Newtonsoft.Json;
 using SpawnConfig.ExtendedClasses;
 
-public class JsonManager {
+namespace SpawnConfig;
 
-    public static List<ExtendedGroupCounts> GetEGCListFromJSON(string path){
+public class JsonManager
+{
+
+    public static List<ExtendedGroupCounts> GetEGCListFromJSON(string path)
+    {
         List<ExtendedGroupCounts> temp = [];
-        if(File.Exists(path)){
+        if (File.Exists(path))
+        {
             string readFile = File.ReadAllText(path);
-            if(readFile != null && readFile != ""){
+            if (readFile != null && readFile != "")
+            {
                 temp = JsonConvert.DeserializeObject<List<ExtendedGroupCounts>>(readFile);
             }
         }
         return temp;
     }
 
-    public static List<ExtendedEnemySetup> GetEESListFromJSON(string path){
+    public static List<ExtendedEnemySetup> GetEESListFromJSON(string path)
+    {
         List<ExtendedEnemySetup> temp = [];
-        if(File.Exists(path)){
+        if (File.Exists(path))
+        {
             string readFile = File.ReadAllText(path);
-            if(readFile != null && readFile != ""){
+            if (readFile != null && readFile != "")
+            {
                 temp = JsonConvert.DeserializeObject<List<ExtendedEnemySetup>>(readFile);
+                if (!readFile.Contains("allowDuplicates"))
+                {
+                    SpawnConfig.missingProperties = true;
+                }
             }
         }
         return temp;
     }
 
-    public static string EESToJSON(List<ExtendedEnemySetup> eesList) {
+    public static string EESToJSON(List<ExtendedEnemySetup> eesList)
+    {
 
         StringBuilder json = new();
         StringWriter sw = new(json);
@@ -37,7 +51,8 @@ public class JsonManager {
             writer.Formatting = Formatting.Indented;
             writer.WriteStartArray();
 
-            foreach(ExtendedEnemySetup ees in eesList){
+            foreach (ExtendedEnemySetup ees in eesList)
+            {
                 writer.WriteStartObject();
                 writer.WritePropertyName("name");
                 writer.WriteValue(ees.name);
@@ -51,7 +66,8 @@ public class JsonManager {
                 writer.WriteValue(ees.runsPlayed);
                 writer.WritePropertyName("spawnObjects");
                 writer.WriteStartArray();
-                foreach(string s in ees.spawnObjects){
+                foreach (string s in ees.spawnObjects)
+                {
                     writer.WriteValue(s);
                 }
                 writer.WriteEndArray();
@@ -63,6 +79,8 @@ public class JsonManager {
                 writer.WriteValue(ees.difficulty3Weight);
                 writer.WritePropertyName("thisGroupOnly");
                 writer.WriteValue(ees.thisGroupOnly);
+                writer.WritePropertyName("allowDuplicates");
+                writer.WriteValue(ees.allowDuplicates);
                 writer.WritePropertyName("alterAmountChance");
                 writer.WriteValue(ees.alterAmountChance);
                 writer.WritePropertyName("alterAmountMin");
@@ -78,7 +96,8 @@ public class JsonManager {
         return json.ToString();
     }
 
-    public static string GroupCountsToJSON(List<ExtendedGroupCounts> gcList) {
+    public static string GroupCountsToJSON(List<ExtendedGroupCounts> gcList)
+    {
 
         StringBuilder json = new();
         StringWriter sw = new(json);
@@ -87,7 +106,8 @@ public class JsonManager {
             writer.Formatting = Formatting.Indented;
             writer.WriteStartArray();
 
-            foreach(ExtendedGroupCounts groupCounts in gcList){
+            foreach (ExtendedGroupCounts groupCounts in gcList)
+            {
                 writer.Formatting = Formatting.Indented;
                 writer.WriteStartObject();
                 writer.WritePropertyName("level");

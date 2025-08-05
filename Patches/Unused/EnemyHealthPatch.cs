@@ -4,6 +4,9 @@ namespace SpawnConfig.Patches;
 
 [HarmonyPatch(typeof(EnemyHealth))]
 
+// Early attempt at modifying enemy health based on name. Seems pretty consistent!
+// But currently unimplemented and not very useful for the mod. Just thought I'd keep it in case I need it later
+
 public class EnemyHealthPatch {
 
     [HarmonyPatch("OnSpawn")]
@@ -16,6 +19,3 @@ public class EnemyHealthPatch {
     }
 
 }*/
-
-// Early attempt at modifying enemy health based on name. Seems pretty consistent!
-// But currently unimplemented and not very useful for the mod. Just thought I'd keep it in case I need it later
