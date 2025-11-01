@@ -2,7 +2,7 @@
 - Updated for 0.3
 - Reminder: The new vanilla enemy groups can be found in the file "BepInEx\config\SpawnConfig\Defaults\SpawnGroups-Readonly.json" after launching the game once. You can also enable the setting "Re-add missing groups" to make the game automatically add the new groups to your custom config on startup
 - Removed REPOLib dependency temporarily until it gets updated. This only affects modded enemy compatibility
-- The log now shows how many enemy groups & individual enemies were spawned
+- The log now shows how many total enemies were spawned
 - Updated the Github wiki page with the new [enemy names](https://github.com/Index154/REPO_SpawnConfig/wiki/Vanilla-spawnObjects-(Enemy-Names))
 
 ### 1.2.3
