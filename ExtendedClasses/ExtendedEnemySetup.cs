@@ -38,6 +38,7 @@ public class ExtendedEnemySetup {
             minLevel = enemySetup.levelsCompletedMin + 1;
             maxLevel = enemySetup.levelsCompletedMax + 1;
         }
+        if (maxLevel == 1) maxLevel = 1000;     // In vanilla if maxLevel is 0 the game ignores the maxLevel check
         runsPlayed = enemySetup.runsPlayed;
         spawnObjects = enemySetup.spawnObjects.Where(obj => !obj.PrefabName.Contains("Director")).Select(obj => obj.PrefabName).ToList();
         float baseWeight = 100.0f;
