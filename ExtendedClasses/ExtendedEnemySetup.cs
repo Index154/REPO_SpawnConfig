@@ -84,9 +84,10 @@ public class ExtendedEnemySetup {
         if (enemyList.Select(obj => obj.name).ToList().Contains(name))
         {
             weight = (float)(weight * SpawnConfig.configManager.repeatMultiplier.Value);
+            if (weight < 0.1) weight = 0.1f;
             if (!allowDuplicates) weight = 0;
         }
-        if (weight < 0) weight = 0;
+        if (weight < 0.1) weight = 0;
         return weight;
     }
 

@@ -400,6 +400,7 @@ public class EnemyDirectorPatch
         }
 
         // Pick spawns
+        __instance.totalAmount = groupCount1 + groupCount2 + groupCount3;
         for (int i = 0; i < groupCount3; i++)
         {
             PickEnemiesCustom(__instance.enemiesDifficulty3, __instance);
@@ -413,7 +414,6 @@ public class EnemyDirectorPatch
             PickEnemiesCustom(__instance.enemiesDifficulty1, __instance);
         }
 
-        __instance.totalAmount = groupCount1 + groupCount2 + groupCount3;
         SpawnConfig.Logger.LogInfo("Spawned a total of [" + __instance.totalAmount + "] enemy groups");
         return false;
     }
@@ -421,6 +421,7 @@ public class EnemyDirectorPatch
     public static void PickEnemiesCustom(List<EnemySetup> _enemiesList, EnemyDirector __instance)
     {
         if (!SemiFunc.IsMasterClientOrSingleplayer()) return;
+        if (onlyOneSetup) return;
 
         if (_enemiesList == __instance.enemiesDifficulty1) currentDifficultyPick = 1;
         if (_enemiesList == __instance.enemiesDifficulty2) currentDifficultyPick = 2;
@@ -435,7 +436,6 @@ public class EnemyDirectorPatch
         float weightSum = 0.0f;
         foreach (EnemySetup enemy in _enemiesList)
         {
-
             // Vanilla code
             if ((enemy.levelsCompletedCondition && (RunManager.instance.levelsCompleted < enemy.levelsCompletedMin || RunManager.instance.levelsCompleted > enemy.levelsCompletedMax)) || num < enemy.runsPlayed) {
                 continue;
@@ -451,6 +451,13 @@ public class EnemyDirectorPatch
             SpawnConfig.Logger.LogInfo(enemy.name + " = " + weight);
         }
 
+        // Prevent error when there's no selectable setups
+        if(possibleEnemies.Count < 1){
+            SpawnConfig.Logger.LogError("No selectable enemy groups found! This level will have one less enemy than intended");
+            __instance.totalAmount--;
+            return;
+        }
+
         // Pick EnemySetup
         EnemySetup item = null;
         float randRoll = UnityEngine.Random.Range(1.0f, weightSum);
@@ -463,15 +470,7 @@ public class EnemyDirectorPatch
 
             if (weight >= randRoll) {
                 SpawnConfig.Logger.LogInfo("Selected: " + enemy.name);
-                if (onlyOneSetup) {
-                    // Replace with empty dummy setup if a thisGroupOnly setup has been selected already
-                    item = ScriptableObject.CreateInstance<EnemySetup>();
-                    item.name = enemy.name;
-                    item.spawnObjects = [];
-                }
-                else {
-                    item = enemy;
-                }
+                item = enemy;
                 break;
             }
             else {
@@ -479,23 +478,17 @@ public class EnemyDirectorPatch
             }
         }
 
-        // Replace all other EnemySetups with empty objects if only this one should spawn
+        // Remove all other EnemySetups if only this one should spawn
         if (extendedSetups.ContainsKey(item.name) && extendedSetups[item.name].thisGroupOnly && !onlyOneSetup) {
             List<string> names = [];
-            int count = __instance.enemyList.Count;
             foreach (EnemySetup enemy in __instance.enemyList) {
                 names.Add(enemy.name);
             }
             __instance.enemyList.Clear();
             __instance.enemyList.Add(item);
             onlyOneSetup = true;
-
-            for (int i = 0; i < count; i++) {
-                EnemySetup item2 = ScriptableObject.CreateInstance<EnemySetup>();
-                item2.name = names[i];
-                item2.spawnObjects = [];
-                __instance.enemyList.Add(item2);
-            }
+            __instance.totalAmount = 1;
+            SpawnConfig.Logger.LogInfo("This is a solo group! Removing all other spawns...");
         }
         else {
             __instance.enemyList.Add(item);
