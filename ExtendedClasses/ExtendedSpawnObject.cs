@@ -13,10 +13,10 @@ public class ExtendedSpawnObject {
     [JsonIgnore]
     public bool alteredGroupSize = false;
 
-    public ExtendedSpawnObject(GameObject spawnObject){
-        name = spawnObject.name;
+    public ExtendedSpawnObject(PrefabRef spawnObject){
+        name = spawnObject.PrefabName;
     }
-    public GameObject GetSpawnObject(){
+    public PrefabRef GetSpawnObject(){
         return spawnObjectsDict[name];
     }
 

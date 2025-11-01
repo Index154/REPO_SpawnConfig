@@ -14,12 +14,13 @@ public class EnemyDirectorPatch
     public static bool setupDone = false;
     public static int currentDifficultyPick = 3;
     public static bool onlyOneSetup = false;
-    
+
     public static List<string> enemyList = [];
     public static List<string> enemiesSpawned = [];
     public static List<string> enemiesSpawnedToDelete = [];
     public static Dictionary<string, int> enemyCounts = [];
     public static int enemyListIndex = 0;
+    public static int enemySpawnCount = 0;
 
     public static void EnemySpawnSimulation(List<EnemySetup>[] enemiesDifficulties)
     {
@@ -28,7 +29,8 @@ public class EnemyDirectorPatch
         SpawnConfig.Logger.LogInfo("Consolidated spawn distribution (100 runs, 15 levels each, 3 enemies per tier per level):");
         Dictionary<string, int> enemyCounts = [];
         Dictionary<string, float> enemyRarities = [];
-        for (int z = 0; z < 100; z++) {
+        for (int z = 0; z < 100; z++)
+        {
             enemyList.Clear();
             enemiesSpawned.Clear();
             enemiesSpawnedToDelete.Clear();
@@ -156,11 +158,12 @@ public class EnemyDirectorPatch
     [HarmonyPostfix]
     public static void SetupAfterBundles(EnemyDirector __instance)
     {
-        REPOLib.BundleLoader.OnAllBundlesLoaded += () =>
-        {
-            SpawnConfig.Logger.LogInfo("All bundles have been loaded! Running setup...");
-            SetupOnStart(__instance);
-        };
+        //REPOLib.BundleLoader.OnAllBundlesLoaded += () =>
+        //{
+        //    SpawnConfig.Logger.LogInfo("All bundles have been loaded! Running setup...");
+        //    SetupOnStart(__instance);
+        //};
+        SetupOnStart(__instance);
     }
 
     public static void SetupOnStart(EnemyDirector __instance)
@@ -170,23 +173,22 @@ public class EnemyDirectorPatch
         {
             List<EnemySetup>[] enemiesDifficulties = [__instance.enemiesDifficulty3, __instance.enemiesDifficulty2, __instance.enemiesDifficulty1];
 
-            //EnemySpawnSimulation(enemiesDifficulties);
+            EnemySpawnSimulation(enemiesDifficulties);
 
             // Go through existing EnemySetups & the contained spawnObjects and construct extended objects with default values
-                int x = 3;
+            int x = 3;
             foreach (List<EnemySetup> enemiesDifficulty in enemiesDifficulties)
             {
 
                 foreach (EnemySetup enemySetup in enemiesDifficulty)
                 {
                     // Make list of functional enemy spawnObjects
-                    foreach (GameObject spawnObject in enemySetup.spawnObjects)
+                    foreach (PrefabRef spawnObject in enemySetup.spawnObjects)
                     {
-                        spawnObject.name = spawnObject.name;
                         ExtendedSpawnObject extendedObj = new(spawnObject);
-                        if (!spawnObjectsDict.ContainsKey(spawnObject.name))
+                        if (!spawnObjectsDict.ContainsKey(spawnObject.PrefabName))
                         {
-                            spawnObjectsDict.Add(spawnObject.name, spawnObject);
+                            spawnObjectsDict.Add(spawnObject.PrefabName, spawnObject);
                             //extendedSpawnObjects.Add(extendedObj.name, extendedObj);
                         }
                     }
@@ -203,7 +205,7 @@ public class EnemyDirectorPatch
 
             // Log default spawnObjects
             SpawnConfig.Logger.LogInfo("Found the following enemy spawnObjects:");
-            foreach (KeyValuePair<string, GameObject> entry in spawnObjectsDict){
+            foreach (KeyValuePair<string, PrefabRef> entry in spawnObjectsDict) {
                 if (!entry.Key.Contains("Director")) SpawnConfig.Logger.LogInfo(entry.Key);
             }
 
@@ -217,18 +219,18 @@ public class EnemyDirectorPatch
                 int diff3Count;
                 int diff2Count;
                 int diff1Count;
-                if (multi2 > 0f){
+                if (multi2 > 0f) {
                     diff3Count = (int)__instance.amountCurve3_2.Evaluate(multi2);
                     diff2Count = (int)__instance.amountCurve2_2.Evaluate(multi2);
                     diff1Count = (int)__instance.amountCurve1_2.Evaluate(multi2);
                 }
-                else{
+                else {
                     diff3Count = (int)__instance.amountCurve3_1.Evaluate(multi1);
                     diff2Count = (int)__instance.amountCurve2_1.Evaluate(multi1);
                     diff1Count = (int)__instance.amountCurve1_1.Evaluate(multi1);
                 }
                 // Only add values if they have changed compared to the previous
-                if (y == 0 || diff3Count != difficulty3Counts[previousIndex] || diff2Count != difficulty2Counts[previousIndex] || diff1Count != difficulty1Counts[previousIndex]){
+                if (y == 0 || diff3Count != difficulty3Counts[previousIndex] || diff2Count != difficulty2Counts[previousIndex] || diff1Count != difficulty1Counts[previousIndex]) {
                     levelNumbers.Add(y + 1);
                     difficulty3Counts.Add(diff3Count);
                     difficulty2Counts.Add(diff2Count);
@@ -236,7 +238,7 @@ public class EnemyDirectorPatch
                     previousIndex++;
                 }
             }
-            for (int z = 0; z < difficulty1Counts.Count; z++){
+            for (int z = 0; z < difficulty1Counts.Count; z++) {
                 ExtendedGroupCounts extendedGroupCount = new ExtendedGroupCounts(z);
                 extendedGroupCounts.Add(extendedGroupCount.level, extendedGroupCount);
             }
@@ -306,13 +308,14 @@ public class EnemyDirectorPatch
 
         __instance.enemyListCurrent.Clear();
         __instance.enemyList.Clear();
+        enemySpawnCount = 0;
+        onlyOneSetup = false;
 
         // Update enemiesDifficulty lists with customized setups
         // Gotta do it here because it seems that the enemiesDifficulty lists get reset to their default values between Awake() and AmountSetup() - And doing it here is required so we can replace the spawnObjects with empty lists for the duration of one level only
         __instance.enemiesDifficulty1.Clear();
         __instance.enemiesDifficulty2.Clear();
         __instance.enemiesDifficulty3.Clear();
-        onlyOneSetup = false;
         foreach (KeyValuePair<string, ExtendedEnemySetup> ext in extendedSetups)
         {
             if (ext.Value.difficulty1Weight > 0) __instance.enemiesDifficulty1.Add(ext.Value.GetEnemySetup());
@@ -411,6 +414,7 @@ public class EnemyDirectorPatch
         }
 
         __instance.totalAmount = groupCount1 + groupCount2 + groupCount3;
+        SpawnConfig.Logger.LogInfo("Spawned a total of [" + __instance.totalAmount + "] enemy groups");
         return false;
     }
 
@@ -433,7 +437,7 @@ public class EnemyDirectorPatch
         {
 
             // Vanilla code
-            if ((enemy.levelsCompletedCondition && (RunManager.instance.levelsCompleted < enemy.levelsCompletedMin || RunManager.instance.levelsCompleted > enemy.levelsCompletedMax)) || num < enemy.runsPlayed){
+            if ((enemy.levelsCompletedCondition && (RunManager.instance.levelsCompleted < enemy.levelsCompletedMin || RunManager.instance.levelsCompleted > enemy.levelsCompletedMax)) || num < enemy.runsPlayed) {
                 continue;
             }
 
@@ -451,26 +455,26 @@ public class EnemyDirectorPatch
         EnemySetup item = null;
         float randRoll = UnityEngine.Random.Range(1.0f, weightSum);
         SpawnConfig.Logger.LogInfo("Selecting a group based on random number " + randRoll + "...");
-        foreach (EnemySetup enemy in possibleEnemies){
+        foreach (EnemySetup enemy in possibleEnemies) {
 
             float weight = 1.0f;
             if (extendedSetups.ContainsKey(enemy.name)) weight = extendedSetups[enemy.name].GetWeight(currentDifficultyPick, __instance.enemyList);
             SpawnConfig.Logger.LogDebug("=> " + enemy.name + " = " + weight + " / " + randRoll);
 
-            if (weight >= randRoll){
+            if (weight >= randRoll) {
                 SpawnConfig.Logger.LogInfo("Selected: " + enemy.name);
-                if (onlyOneSetup){
+                if (onlyOneSetup) {
                     // Replace with empty dummy setup if a thisGroupOnly setup has been selected already
                     item = ScriptableObject.CreateInstance<EnemySetup>();
                     item.name = enemy.name;
                     item.spawnObjects = [];
                 }
-                else{
+                else {
                     item = enemy;
                 }
                 break;
             }
-            else{
+            else {
                 randRoll -= weight;
             }
         }
@@ -479,24 +483,31 @@ public class EnemyDirectorPatch
         if (extendedSetups.ContainsKey(item.name) && extendedSetups[item.name].thisGroupOnly && !onlyOneSetup) {
             List<string> names = [];
             int count = __instance.enemyList.Count;
-            foreach (EnemySetup enemy in __instance.enemyList){
+            foreach (EnemySetup enemy in __instance.enemyList) {
                 names.Add(enemy.name);
             }
             __instance.enemyList.Clear();
             __instance.enemyList.Add(item);
             onlyOneSetup = true;
 
-            for (int i = 0; i < count; i++){
+            for (int i = 0; i < count; i++) {
                 EnemySetup item2 = ScriptableObject.CreateInstance<EnemySetup>();
                 item2.name = names[i];
                 item2.spawnObjects = [];
                 __instance.enemyList.Add(item2);
             }
         }
-        else{
+        else {
             __instance.enemyList.Add(item);
             // enemyListCurrent does not seem to serve any purpose yet so far so I left it out
         }
+    }
+
+    [HarmonyPatch("DebugResult")]
+    [HarmonyPrefix]
+    public static void Debug()
+    {
+        SpawnConfig.Logger.LogInfo("Spawned a total of [" + enemySpawnCount + "] enemy objects");
     }
     
 }

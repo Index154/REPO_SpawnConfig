@@ -5,7 +5,7 @@
         <AssemblyName>Index154.SpawnConfig</AssemblyName>
         <Product>SpawnConfig</Product>
         <!-- Change to whatever version you're currently on. -->
-        <Version>1.2.3</Version>
+        <Version>1.2.4</Version>
     </PropertyGroup>
 
     <!-- Project Properties -->
@@ -43,7 +43,7 @@
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" PrivateAssets="all"/>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="R.E.P.O.GameLibs.Steam" Version="*-*" />
-        <PackageReference Include="UnityEngine.Modules" Version="2022.3.21" IncludeAssets="compile" PrivateAssets="all"/>
+        <PackageReference Include="UnityEngine.Modules" Version="2022.3.62" IncludeAssets="compile" PrivateAssets="all"/>
         <PackageReference Include="Zehs.REPOLib" Version="2.*" />
     </ItemGroup>
 

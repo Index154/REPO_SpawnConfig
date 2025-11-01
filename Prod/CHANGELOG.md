@@ -1,3 +1,10 @@
+### 1.2.4
+- Updated for 0.3
+- Reminder: The new vanilla enemy groups can be found in the file "BepInEx\config\SpawnConfig\Defaults\SpawnGroups-Readonly.json" after launching the game once. You can also enable the setting "Re-add missing groups" to make the game automatically add the new groups to your custom config on startup
+- Removed REPOLib dependency temporarily until it gets updated. This does not impact the basic functionality of SpawnConfig. It only reduces modded enemy compatibility
+- The log now shows how many enemy groups & individual enemies were spawned (log level: debug)
+- Updated the Github wiki page with the new [enemy names](https://github.com/Index154/REPO_SpawnConfig/wiki/Vanilla-spawnObjects-(Enemy-Names))
+
 ### 1.2.3
 - The mod no longer generates "Explained.json" files. All the necessary information will now be found on the [wiki](https://github.com/Index154/REPO_SpawnConfig/wiki) including changes and new additions! Also moved some stuff from the Thunderstore page to the wiki
 - Added a new option `allowDuplicates` to all groups in SpawnGroups.json. You can prevent specific groups from spawning more than once per level by setting this value to `false`

@@ -16,7 +16,7 @@ public class LevelGeneratorPatch {
         int max = enemySetup.spawnObjects.Count;    // Exlusive!
         while(pickedIndex == -1){
             int index = UnityEngine.Random.Range(min, max);
-            if(!enemySetup.spawnObjects[index].name.Contains("Director")) {
+            if(!enemySetup.spawnObjects[index].PrefabName.Contains("Director")) {
                 pickedIndex = index;
             }else{
                 if(min == max) pickedIndex = min;
@@ -36,11 +36,11 @@ public class LevelGeneratorPatch {
         bool gnomeCheck = false;
         bool bangCheck = false;
         int directorCount = 0;
-        foreach (GameObject spawnObject in enemySetup.spawnObjects){
-            if(spawnObject.name.Contains("Gnome") && !gnomeCheck){
+        foreach (PrefabRef spawnObject in enemySetup.spawnObjects){
+            if(spawnObject.PrefabName.Contains("Gnome") && !gnomeCheck){
                 gnomeCheck = true;
                 directorCount++;
-            }else if(spawnObject.name.Contains("Bang") && !bangCheck){
+            }else if(spawnObject.PrefabName.Contains("Bang") && !bangCheck){
                 bangCheck = true;
                 directorCount++;
             }
@@ -73,11 +73,12 @@ public class LevelGeneratorPatch {
 
         // Logging
         Dictionary<string, int> spawnObjects = new();
-        foreach (GameObject spawnObject in enemySetup.spawnObjects){
-            if(spawnObjects.ContainsKey(spawnObject.name)){
-                spawnObjects[spawnObject.name] = spawnObjects[spawnObject.name] + 1;
+        foreach (PrefabRef spawnObject in enemySetup.spawnObjects){
+            EnemyDirectorPatch.enemySpawnCount++;
+            if(spawnObjects.ContainsKey(spawnObject.PrefabName)){
+                spawnObjects[spawnObject.PrefabName] = spawnObjects[spawnObject.PrefabName] + 1;
             }else{
-                spawnObjects.Add(spawnObject.name, 1);
+                spawnObjects.Add(spawnObject.PrefabName, 1);
             }
         }
         string logString = "";

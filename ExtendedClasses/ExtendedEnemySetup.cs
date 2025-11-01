@@ -39,7 +39,7 @@ public class ExtendedEnemySetup {
             maxLevel = enemySetup.levelsCompletedMax + 1;
         }
         runsPlayed = enemySetup.runsPlayed;
-        spawnObjects = enemySetup.spawnObjects.Where(obj => !obj.name.Contains("Director")).Select(obj => obj.name).ToList();
+        spawnObjects = enemySetup.spawnObjects.Where(obj => !obj.PrefabName.Contains("Director")).Select(obj => obj.PrefabName).ToList();
         float baseWeight = 100.0f;
         if ((bool)enemySetup.rarityPreset)
         {
