@@ -353,8 +353,6 @@ public class EnemyDirectorPatch
         int groupCount1 = 0;
         int currentLevel = RunManager.instance.levelsCompleted + 1;
         SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
-        SpawnConfig.Logger.LogInfo("Determining number of enemy groups to spawn...");
-        SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
 
         // Find the closest level config entry to use (current level or any previous)
         int configKey = 0;
@@ -420,7 +418,6 @@ public class EnemyDirectorPatch
                     groupCount1 *= SpawnConfig.configManager.groupCountMultiplier.Value;
                 }
                 SpawnConfig.Logger.LogInfo("Selected group counts: [" + groupCount1 + "," + groupCount2 + "," + groupCount3 + "]");
-                SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
                 break;
             }
             else
