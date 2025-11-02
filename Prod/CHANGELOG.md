@@ -1,3 +1,9 @@
+### 1.2.5
+- Added new spawn group weight multipliers for each level type (museum, manor, arctic and wizard). The property looks like this: `"levelWeightMultipliers": {"Arctic": 1.0, "Manor": 1.0, "Museum": 1.0, "Wizard": 1.0}`. All three weights of a spawn group will be multiplied by the number corresponding to the current level type. Example use cases: If you set "Manor" to 0 for a group then the group will not be able to spawn in the headman manor. If you set it to 0.5 for museum then the group will be half as likely to spawn on museum compared to the other levels. I decided to do it this way instead of a simple black- or whitelist to allow for more fine-tuning
+- New / modded levels will hopefully be added to this list automatically but we'll see once they work again
+- Made the logs a bit prettier
+- Made the GroupsPerLevel.json formatting a bit better
+
 ### 1.2.4
 - Updated for 0.3
 - Reminder: The new vanilla enemy groups can be found in the file "BepInEx\config\SpawnConfig\Defaults\SpawnGroups-Readonly.json" after launching the game once. You can also enable the setting "Re-add missing groups" to make the game automatically add the new groups to your custom config on startup

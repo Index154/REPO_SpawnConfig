@@ -9,7 +9,7 @@ namespace SpawnConfig;
 public class JsonManager
 {
 
-    public static List<ExtendedGroupCounts> GetEGCListFromJSON(string path)
+    public static List<ExtendedGroupCounts> GetGroupCountsFromJSON(string path)
     {
         List<ExtendedGroupCounts> temp = [];
         if (File.Exists(path))
@@ -23,7 +23,7 @@ public class JsonManager
         return temp;
     }
 
-    public static List<ExtendedEnemySetup> GetEESListFromJSON(string path)
+    public static List<ExtendedEnemySetup> GetSpawnGroupsFromJSON(string path)
     {
         List<ExtendedEnemySetup> temp = [];
         if (File.Exists(path))
@@ -41,7 +41,7 @@ public class JsonManager
         return temp;
     }
 
-    public static string EESToJSON(List<ExtendedEnemySetup> eesList)
+    public static string SpawnGroupsToJSON(List<ExtendedEnemySetup> eesList)
     {
 
         StringBuilder json = new();
@@ -77,6 +77,18 @@ public class JsonManager
                 writer.WriteValue(ees.difficulty2Weight);
                 writer.WritePropertyName("difficulty3Weight");
                 writer.WriteValue(ees.difficulty3Weight);
+                writer.WritePropertyName("levelWeightMultipliers");
+                writer.WriteStartObject();
+                writer.Formatting = Formatting.None;
+                int x = 0;
+                foreach (KeyValuePair<string, float> kvp in ees.levelWeightMultipliers){
+                    if (x > 0) writer.WriteRaw(", ");
+                    writer.WriteRaw("\"" + kvp.Key + "\": ");
+                    writer.WriteRaw(kvp.Value.ToString("0.0"));
+                    x++;
+                }
+                writer.WriteEndObject();
+                writer.Formatting = Formatting.Indented;
                 writer.WritePropertyName("thisGroupOnly");
                 writer.WriteValue(ees.thisGroupOnly);
                 writer.WritePropertyName("allowDuplicates");
@@ -118,17 +130,16 @@ public class JsonManager
                 {
                     writer.WriteStartObject();
                     writer.Formatting = Formatting.None;
-                    writer.WritePropertyName("counts");
-                    writer.WriteStartArray();
-                    writer.WriteValue(groupCountEntry.counts[0]);
-                    writer.WriteValue(groupCountEntry.counts[1]);
-                    writer.WriteValue(groupCountEntry.counts[2]);
-                    writer.WriteEndArray();
-                    writer.WritePropertyName("weight");
-                    writer.WriteValue(groupCountEntry.weight);
+                    writer.WriteRaw("\"counts\": ");
+                    writer.WriteRaw("[");
+                    writer.WriteRaw(groupCountEntry.counts[0] + ",");
+                    writer.WriteRaw(groupCountEntry.counts[1] + ",");
+                    writer.WriteRaw(groupCountEntry.counts[2] + "");
+                    writer.WriteRaw("], \"weight\": ");
+                    writer.WriteRaw(groupCountEntry.weight.ToString());
                     writer.WriteEndObject();
+                    writer.Formatting = Formatting.Indented;
                 }
-                writer.Formatting = Formatting.Indented;
                 writer.WriteEndArray();
                 writer.WriteEndObject();
             }

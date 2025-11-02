@@ -20,14 +20,13 @@ public class ExtendedEnemySetup {
     public float difficulty1Weight = 0.0f;
     public float difficulty2Weight = 0.0f;
     public float difficulty3Weight = 0.0f;
+    public Dictionary<string, float> levelWeightMultipliers = [];
     public bool thisGroupOnly = false;
     public bool allowDuplicates = true;
     public double alterAmountChance = 0.0;
     public int alterAmountMin = 0;
     public int alterAmountMax = 0;
-    public ExtendedEnemySetup () {
-
-    }
+    public ExtendedEnemySetup() {}
     
     public ExtendedEnemySetup(EnemySetup enemySetup, int difficulty)
     {
@@ -57,6 +56,10 @@ public class ExtendedEnemySetup {
         difficulty1Weight = (difficulty == 1) ? baseWeight : 0.0f;
         difficulty2Weight = (difficulty == 2) ? baseWeight : 0.0f;
         difficulty3Weight = (difficulty == 3) ? baseWeight : 0.0f;
+
+        foreach(string levelName in levelNames){
+            if(!levelWeightMultipliers.ContainsKey(levelName)) levelWeightMultipliers.Add(levelName, 1.0f);
+        }
     }
     
     public EnemySetup GetEnemySetup()
@@ -75,16 +78,18 @@ public class ExtendedEnemySetup {
         return es;
     }
 
-    public float GetWeight(int difficulty, List<EnemySetup> enemyList)
+    public float GetWeight(int difficulty, List<EnemySetup> enemyList, string currentLevelName)
     {
         float weight = difficulty1Weight;
         if (difficulty == 2) weight = difficulty2Weight;
         else if (difficulty == 3) weight = difficulty3Weight;
 
-        if (enemyList.Select(obj => obj.name).ToList().Contains(name))
-        {
+        if(levelWeightMultipliers.ContainsKey(currentLevelName)){
+            weight = (float)(weight * levelWeightMultipliers[currentLevelName]);
+        }
+
+        if (enemyList.Select(obj => obj.name).ToList().Contains(name)) {
             weight = (float)(weight * SpawnConfig.configManager.repeatMultiplier.Value);
-            if (weight < 0.1) weight = 0.1f;
             if (!allowDuplicates) weight = 0;
         }
         if (weight < 0.1) weight = 0;
@@ -125,6 +130,12 @@ public class ExtendedEnemySetup {
         if (!this.levelRangeCondition && this.maxLevel == 10)
         {
             this.maxLevel = 0;
+            changedSomething = true;
+        }
+        if (this.levelWeightMultipliers.Count < levelNames.Count){
+            foreach(string levelName in levelNames){
+                if(!levelWeightMultipliers.ContainsKey(levelName)) levelWeightMultipliers.Add(levelName, 1.0f);
+            }
             changedSomething = true;
         }
 

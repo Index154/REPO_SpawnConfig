@@ -173,7 +173,16 @@ public class EnemyDirectorPatch
         {
             List<EnemySetup>[] enemiesDifficulties = [__instance.enemiesDifficulty3, __instance.enemiesDifficulty2, __instance.enemiesDifficulty1];
 
-            EnemySpawnSimulation(enemiesDifficulties);
+            // EnemySpawnSimulation(enemiesDifficulties);
+
+            // Get level types
+            SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
+            SpawnConfig.Logger.LogInfo("Found the following level types:");
+            SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
+            foreach (Level lvl in RunManager.instance.levels){
+                SpawnConfig.Logger.LogInfo(lvl.name.Replace("Level - ", ""));
+                levelNames.Add(lvl.name.Replace("Level - ", ""));
+            }
 
             // Go through existing EnemySetups & the contained spawnObjects and construct extended objects with default values
             int x = 3;
@@ -204,7 +213,9 @@ public class EnemyDirectorPatch
             }
 
             // Log default spawnObjects
+            SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
             SpawnConfig.Logger.LogInfo("Found the following enemy spawnObjects:");
+            SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
             foreach (KeyValuePair<string, PrefabRef> entry in spawnObjectsDict) {
                 if (!entry.Key.Contains("Director")) SpawnConfig.Logger.LogInfo(entry.Key);
             }
@@ -240,13 +251,16 @@ public class EnemyDirectorPatch
             }
             for (int z = 0; z < difficulty1Counts.Count; z++) {
                 ExtendedGroupCounts extendedGroupCount = new ExtendedGroupCounts(z);
-                extendedGroupCounts.Add(extendedGroupCount.level, extendedGroupCount);
+                if(!extendedGroupCounts.ContainsKey(extendedGroupCount.level)) extendedGroupCounts.Add(extendedGroupCount.level, extendedGroupCount);
             }
 
             // Read / update JSON configs
             SpawnConfig.ReadAndUpdateJSON();
 
             // Deal with invalid enemy names
+            SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
+            SpawnConfig.Logger.LogInfo("Checking for invalid enemy objects and groups...");
+            SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
             List<string> invalidGroups = [];
             foreach (KeyValuePair<string, ExtendedEnemySetup> ext in extendedSetups)
             {
@@ -283,6 +297,8 @@ public class EnemyDirectorPatch
                 }
                 if (invalid) invalidGroups.Add(ext.Key);
             }
+            SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
+
             // Remove invalid groups
             foreach (string sp in invalidGroups)
             {
@@ -414,6 +430,7 @@ public class EnemyDirectorPatch
             PickEnemiesCustom(__instance.enemiesDifficulty1, __instance);
         }
 
+        SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
         SpawnConfig.Logger.LogInfo("Spawned a total of [" + __instance.totalAmount + "] enemy groups");
         return false;
     }
@@ -426,10 +443,13 @@ public class EnemyDirectorPatch
         if (_enemiesList == __instance.enemiesDifficulty1) currentDifficultyPick = 1;
         if (_enemiesList == __instance.enemiesDifficulty2) currentDifficultyPick = 2;
         if (_enemiesList == __instance.enemiesDifficulty3) currentDifficultyPick = 3;
+        SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
         SpawnConfig.Logger.LogInfo("Picking difficulty " + currentDifficultyPick + " setup...");
         SpawnConfig.Logger.LogInfo("Enemy group weights:");
+        SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
 
         int num = DataDirector.instance.SettingValueFetch(DataDirector.Setting.RunsPlayed);
+        string currentLevelName = RunManager.instance.levelCurrent.name.Replace("Level - ", "");
         List<EnemySetup> possibleEnemies = [];
 
         // Filter the list before doing the selection because we need to only use the weights of EnemySetups that can actually spawn
@@ -443,7 +463,7 @@ public class EnemyDirectorPatch
 
             // Weight logic
             float weight = 1.0f;
-            if (extendedSetups.ContainsKey(enemy.name)) weight = extendedSetups[enemy.name].GetWeight(currentDifficultyPick, __instance.enemyList);
+            if (extendedSetups.ContainsKey(enemy.name)) weight = extendedSetups[enemy.name].GetWeight(currentDifficultyPick, __instance.enemyList, currentLevelName);
             if (weight < 1) continue;
             weightSum += weight;
 
@@ -461,15 +481,15 @@ public class EnemyDirectorPatch
         // Pick EnemySetup
         EnemySetup item = null;
         float randRoll = UnityEngine.Random.Range(1.0f, weightSum);
-        SpawnConfig.Logger.LogInfo("Selecting a group based on random number " + randRoll + "...");
+        SpawnConfig.Logger.LogDebug("Selecting a group based on random number " + randRoll + "...");
         foreach (EnemySetup enemy in possibleEnemies) {
 
             float weight = 1.0f;
-            if (extendedSetups.ContainsKey(enemy.name)) weight = extendedSetups[enemy.name].GetWeight(currentDifficultyPick, __instance.enemyList);
-            SpawnConfig.Logger.LogDebug("=> " + enemy.name + " = " + weight + " / " + randRoll);
+            if (extendedSetups.ContainsKey(enemy.name)) weight = extendedSetups[enemy.name].GetWeight(currentDifficultyPick, __instance.enemyList, currentLevelName);
+            SpawnConfig.Logger.LogDebug(enemy.name + " = " + weight + " / " + randRoll);
 
             if (weight >= randRoll) {
-                SpawnConfig.Logger.LogInfo("Selected: " + enemy.name);
+                SpawnConfig.Logger.LogInfo("  ==>  Selected: " + enemy.name);
                 item = enemy;
                 break;
             }
@@ -501,6 +521,7 @@ public class EnemyDirectorPatch
     public static void Debug()
     {
         SpawnConfig.Logger.LogInfo("Spawned a total of [" + enemySpawnCount + "] enemy objects");
+        SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
     }
     
 }

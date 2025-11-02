@@ -72,9 +72,9 @@ public class SpawnConfig : BaseUnityPlugin
     public static void ReadAndUpdateJSON(){
 
         // Read custom EnemySetup configs
-        List<ExtendedEnemySetup> customSetupsList = JsonManager.GetEESListFromJSON(spawnGroupsPath);
+        List<ExtendedEnemySetup> customSetupsList = JsonManager.GetSpawnGroupsFromJSON(spawnGroupsPath);
         // Read custom group counts config
-        List<ExtendedGroupCounts> customGroupCountsList = JsonManager.GetEGCListFromJSON(groupsPerLevelPath);
+        List<ExtendedGroupCounts> customGroupCountsList = JsonManager.GetGroupCountsFromJSON(groupsPerLevelPath);
 
         // Save default group counts to file
         List<ExtendedGroupCounts> extendedGroupCountsList = extendedGroupCounts.Select(obj => obj.Value).ToList();
@@ -91,10 +91,10 @@ public class SpawnConfig : BaseUnityPlugin
 
         // Save default ExtendedEnemySetups to file for comparison purposes on next launch
         List<ExtendedEnemySetup> extendedSetupsList = extendedSetups.Select(obj => obj.Value).ToList();
-        File.WriteAllText(defaultSpawnGroupsPath, JsonManager.EESToJSON(extendedSetupsList));
+        File.WriteAllText(defaultSpawnGroupsPath, JsonManager.SpawnGroupsToJSON(extendedSetupsList));
         if (customSetupsList.Count < 1) {
             Logger.LogInfo("No custom spawn groups config found! Creating default file");
-            File.WriteAllText(spawnGroupsPath, JsonManager.EESToJSON(extendedSetupsList));
+            File.WriteAllText(spawnGroupsPath, JsonManager.SpawnGroupsToJSON(extendedSetupsList));
             customSetupsList = extendedSetupsList;
         }
 
@@ -120,11 +120,14 @@ public class SpawnConfig : BaseUnityPlugin
         customSetupsList = tempDict.Values.ToList();
 
         // Update the file if something was changed
-        if(updatedFile || missingProperties) File.WriteAllText(spawnGroupsPath, JsonManager.EESToJSON(customSetupsList));
+        if(updatedFile || missingProperties) File.WriteAllText(spawnGroupsPath, JsonManager.SpawnGroupsToJSON(customSetupsList));
 
         // Replace vanilla values
         extendedSetups = customSetupsList.ToDictionary(obj => obj.name);
         extendedGroupCounts = customGroupCountsList.ToDictionary(obj => obj.level);
+
+        // Update formatting
+        File.WriteAllText(groupsPerLevelPath, JsonManager.GroupCountsToJSON(customGroupCountsList));
         
         // Delete legacy files
         File.Delete(spawnGroupsExplainedPath);

@@ -5,7 +5,7 @@
         <AssemblyName>Index154.SpawnConfig</AssemblyName>
         <Product>SpawnConfig</Product>
         <!-- Change to whatever version you're currently on. -->
-        <Version>1.2.4</Version>
+        <Version>1.2.5</Version>
     </PropertyGroup>
 
     <!-- Project Properties -->
