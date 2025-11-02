@@ -125,7 +125,7 @@ public class SpawnConfig : BaseUnityPlugin
         // Replace vanilla values
         extendedSetups = customSetupsList.ToDictionary(obj => obj.name);
         extendedGroupCounts = customGroupCountsList.ToDictionary(obj => obj.level);
-
+        
         // Update formatting
         File.WriteAllText(groupsPerLevelPath, JsonManager.GroupCountsToJSON(customGroupCountsList));
         

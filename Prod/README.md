@@ -5,13 +5,13 @@ Small warning: Taking advantage of this mod requires you to have a basic underst
 Here's a list of what's made possible by the mod:
 - You can modify or remove the vanilla enemy groups and add your own custom groups
 - Support for custom enemies added by other mods!
-- You can change how many enemy groups spawn based on the level. You can also add multiple possible group count configurations for the same level for some randomness / variety
+- You can change how many enemy groups spawn based on the level number and based on the amount of players in the lobby. You can also add multiple possible group count configurations for the same level for some randomness / variety
 - You can assign weights to fine-tune how likely each enemy group is to appear
-- You can control whether a group should only be able to appear before a certain level or after a certain level
-- You can make a group only spawnable if the host player has played more than a certain number of runs
-- A group can be set to not allow any other groups to spawn if it happens to be selected. Use this if you crafted something truly devious and grand
+- You can control whether a group should only be able to appear before or after a certain level number
+- You can give enemy groups different spawn weights for each type of level (for example you could have the Headman only spawnable in the Manor)
+- An enemy group can be set to not allow any other groups to spawn if it happens to be selected. Use this if you crafted something truly devious and grand
 - You can add extra variety to a group by configuring a chance for it to sometimes be bigger or smaller by a configurable range
-- There is a global setting in the mod that lets you disable enemy spawning entirely
+- You can also disable enemy spawning entirely
 
 
 ## Getting started

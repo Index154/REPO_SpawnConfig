@@ -137,6 +137,10 @@ public class JsonManager
                     writer.WriteRaw(groupCountEntry.counts[2] + "");
                     writer.WriteRaw("], \"weight\": ");
                     writer.WriteRaw(groupCountEntry.weight.ToString());
+                    writer.WriteRaw(", \"minPlayerCount\": ");
+                    writer.WriteRaw(groupCountEntry.minPlayerCount.ToString());
+                    writer.WriteRaw(", \"maxPlayerCount\": ");
+                    writer.WriteRaw(groupCountEntry.maxPlayerCount.ToString());
                     writer.WriteEndObject();
                     writer.Formatting = Formatting.Indented;
                 }

@@ -352,6 +352,9 @@ public class EnemyDirectorPatch
         int groupCount2 = 0;
         int groupCount1 = 0;
         int currentLevel = RunManager.instance.levelsCompleted + 1;
+        SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
+        SpawnConfig.Logger.LogInfo("Determining number of enemy groups to spawn...");
+        SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
 
         // Find the closest level config entry to use (current level or any previous)
         int configKey = 0;
@@ -375,15 +378,25 @@ public class EnemyDirectorPatch
             }
         }
 
-        // Pick a random entry from the list of possibleGroupCounts
+        // Pick a random entry from the list of possibleGroupCounts after filtering them by player count
         int weightSum = 0;
+        int playerCount = 1;
+        if (GameManager.instance.gameMode == 1) playerCount = LevelGenerator.Instance.ModulesReadyPlayers;
+        List<GroupCountEntry> selectableGroupCounts = [];
         foreach (GroupCountEntry groupCountEntry in extendedGroupCounts[configKey].possibleGroupCounts)
         {
+            if (playerCount < groupCountEntry.minPlayerCount || playerCount > groupCountEntry.maxPlayerCount) continue;
+            selectableGroupCounts.Add(groupCountEntry);
             weightSum += groupCountEntry.weight;
         }
+        if(selectableGroupCounts.Count < 1) {
+            SpawnConfig.Logger.LogError("No possible group counts found! Ignoring all playerCount restrictions as a fallback. Make sure there is at least one entry for the current player count of " + playerCount + "!");
+            selectableGroupCounts = extendedGroupCounts[configKey].possibleGroupCounts;
+        }
+        
         int randRoll = UnityEngine.Random.Range(1, weightSum + 1);
-        SpawnConfig.Logger.LogInfo("Selecting group counts based on random number " + randRoll + "...");
-        foreach (GroupCountEntry groupCountEntry in extendedGroupCounts[configKey].possibleGroupCounts)
+        SpawnConfig.Logger.LogDebug("Selecting group counts based on random number " + randRoll + "...");
+        foreach (GroupCountEntry groupCountEntry in selectableGroupCounts)
         {
 
             int weight = groupCountEntry.weight;
@@ -407,6 +420,7 @@ public class EnemyDirectorPatch
                     groupCount1 *= SpawnConfig.configManager.groupCountMultiplier.Value;
                 }
                 SpawnConfig.Logger.LogInfo("Selected group counts: [" + groupCount1 + "," + groupCount2 + "," + groupCount3 + "]");
+                SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
                 break;
             }
             else
