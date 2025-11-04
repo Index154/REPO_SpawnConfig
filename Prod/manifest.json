@@ -1,6 +1,6 @@
 {
     "name": "SpawnConfig",
-    "version_number": "1.2.6",
+    "version_number": "1.2.7",
     "website_url": "https://github.com/Index154/REPO_SpawnConfig",
     "description": "Configure enemy spawning with custom groups, weights and more",
     "dependencies": [

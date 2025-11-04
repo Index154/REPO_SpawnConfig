@@ -22,7 +22,7 @@ public class GroupCountEntry
     public List<int> counts = [];
     public int weight = 1;
     public int minPlayerCount = 1;
-    public int maxPlayerCount = 100;
+    public int maxPlayerCount = 0;
 
     public GroupCountEntry(int i)
     {

@@ -383,7 +383,7 @@ public class EnemyDirectorPatch
         List<GroupCountEntry> selectableGroupCounts = [];
         foreach (GroupCountEntry groupCountEntry in extendedGroupCounts[configKey].possibleGroupCounts)
         {
-            if (playerCount < groupCountEntry.minPlayerCount || playerCount > groupCountEntry.maxPlayerCount) continue;
+            if (playerCount < groupCountEntry.minPlayerCount || (playerCount > groupCountEntry.maxPlayerCount && groupCountEntry.maxPlayerCount != 0)) continue;
             selectableGroupCounts.Add(groupCountEntry);
             weightSum += groupCountEntry.weight;
         }
@@ -467,8 +467,8 @@ public class EnemyDirectorPatch
         float weightSum = 0.0f;
         foreach (EnemySetup enemy in _enemiesList)
         {
-            // Vanilla code
-            if ((enemy.levelsCompletedCondition && (RunManager.instance.levelsCompleted < enemy.levelsCompletedMin || RunManager.instance.levelsCompleted > enemy.levelsCompletedMax)) || num < enemy.runsPlayed) {
+            // NOT 1:1 vanilla code (changed max != 0 condition)
+            if ((enemy.levelsCompletedCondition && (RunManager.instance.levelsCompleted < enemy.levelsCompletedMin || (RunManager.instance.levelsCompleted > enemy.levelsCompletedMax && enemy.levelsCompletedMax != -1))) || num < enemy.runsPlayed) {
                 continue;
             }
 

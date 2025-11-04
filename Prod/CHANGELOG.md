@@ -1,3 +1,6 @@
+### 1.2.7
+- When set to 0, the options "maxLevel" in `SpawnGroups.json` and "maxPlayerCount" in `GroupsPerLevel.json` are now considered as "no maximum" (no more need to set them to arbitrary large numbers)
+
 ### 1.2.6
 - Added minimum and maximum player count settings to the possible group counts in `GroupsPerLevel.json`. With this you can make different configs for different player counts. If there are less players than the minimum or more than the maximum of an entry then that entry can not be selected by the game when loading a level
 - Updated Thunderstore description with info about the new features from 1.2.5 and this version
