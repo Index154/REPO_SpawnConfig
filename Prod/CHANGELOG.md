@@ -1,3 +1,9 @@
+### 1.2.8
+- Re-enabled REPOLib dependency for complete modded enemy support
+- Fixed the levelWeightMultiplier values in `SpawnGroups.json` being formatted incorrectly depending on the user's system language
+- Made sure that the mod will always add an entry for every loaded level (including modded levels) to the levelWeightMultiplier list of all groups in `SpawnGroups.json` if it's missing. If you uninstall or disable a modded level then your weight configs for that level will not be removed from the file
+- Added a new option "Remove unused level weight multipliers" to `Index154.SpawnConfig.cfg` - When enabled, the mod will automatically remove all entries from the levelweightmultipliers that do not match an installed / loaded level. You should only use this if you want to clean up leftover entries from previously installed maps / levels. It's recommended to leave this setting disabled in all other situations to avoid losing parts of your config unexpectedly
+
 ### 1.2.7
 - When set to 0, the options "maxLevel" in `SpawnGroups.json` and "maxPlayerCount" in `GroupsPerLevel.json` are now considered as "no maximum" (no more need to set them to arbitrary large numbers)
 

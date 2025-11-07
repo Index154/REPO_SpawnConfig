@@ -132,11 +132,31 @@ public class ExtendedEnemySetup {
             this.maxLevel = 0;
             changedSomething = true;
         }
-        if (this.levelWeightMultipliers.Count < levelNames.Count){
-            foreach(string levelName in levelNames){
-                if(!levelWeightMultipliers.ContainsKey(levelName)) levelWeightMultipliers.Add(levelName, 1.0f);
+
+        // Remove unused levels if enabled in config
+        if (SpawnConfig.configManager.removeUnloadedLevelWeights.Value)
+        {
+            Dictionary<string, float> newTemp = [];
+            bool removedEntry = false;
+            foreach (KeyValuePair<string, float> kvp in levelWeightMultipliers)
+            {
+                if (!levelNames.Contains(kvp.Key)) {
+                    changedSomething = true;
+                    removedEntry = true;
+                }else{
+                    newTemp.Add(kvp.Key, kvp.Value);
+                }
             }
-            changedSomething = true;
+            if (removedEntry) levelWeightMultipliers = newTemp;
+        }
+        
+        // Add all loaded levels to the config
+        foreach(string levelName in levelNames){
+            if (!levelWeightMultipliers.ContainsKey(levelName))
+            {
+                levelWeightMultipliers.Add(levelName, 1.0f);
+                changedSomething = true;
+            }
         }
 
         return changedSomething;

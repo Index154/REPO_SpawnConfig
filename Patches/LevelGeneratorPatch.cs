@@ -28,7 +28,6 @@ public class LevelGeneratorPatch {
     }
 
     [HarmonyPatch("EnemySpawn")]
-    //[HarmonyPriority(Priority.High)]
     [HarmonyPrefix]
     public static void LogAndModifySpawns(EnemySetup enemySetup, Vector3 position, LevelGenerator __instance){
 

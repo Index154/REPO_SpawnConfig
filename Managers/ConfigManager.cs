@@ -5,6 +5,7 @@ namespace SpawnConfig;
 public class ConfigManager {
     internal ConfigEntry<bool> preventSpawns = null!;
     internal ConfigEntry<bool> addMissingGroups = null!;
+    internal ConfigEntry<bool> removeUnloadedLevelWeights = null!;
     internal ConfigEntry<double> repeatMultiplier = null!;
     internal ConfigEntry<bool> ignoreInvalidGroups = null!;
     internal ConfigEntry<int> groupCountMultiplier = null!;
@@ -13,6 +14,8 @@ public class ConfigManager {
         preventSpawns = configFile.Bind("General", "Prevent enemy spawning", false, new ConfigDescription("Prevent enemy spawning entirely, turning the game into a no-stakes gathering simulator or for when you want to test something in peace"));
 
         addMissingGroups = configFile.Bind("General", "Re-add missing groups", false, new ConfigDescription("Whether the mod should update your custom SpawnGroups config at launch by adding all loaded enemy groups that are missing from it"));
+
+        removeUnloadedLevelWeights = configFile.Bind("General", "Remove unused level weight multipliers", false, new ConfigDescription("Installing a mod which adds a new level will automatically add a config entry for it to the levelWeightMultipliers of every enemy group in your SpawnGroups config. These config entries will remain even if you later uninstall or disable that mod again. If you want to quickly get rid of unused entries in a situation like that then you can enable this setting and launch the game once to have the mod automatically remove them"));
 
         repeatMultiplier = configFile.Bind("General", "Repeat spawn weight multiplier", 0.5, new ConfigDescription("All three weights of an enemy group will be multiplied by this value for the current level after having been selected once. Reduces the chance of encountering multiple copies of a group in the same level. Set to 1.0 to \"disable\""));
 

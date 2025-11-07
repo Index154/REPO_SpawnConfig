@@ -11,7 +11,7 @@ using static SpawnConfig.ListManager;
 namespace SpawnConfig;
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
-//[BepInDependency(REPOLib.MyPluginInfo.PLUGIN_GUID, BepInDependency.DependencyFlags.HardDependency)]
+[BepInDependency(REPOLib.MyPluginInfo.PLUGIN_GUID, BepInDependency.DependencyFlags.HardDependency)]
 public class SpawnConfig : BaseUnityPlugin
 {
     public static SpawnConfig Instance { get; private set; } = null!;
@@ -24,6 +24,7 @@ public class SpawnConfig : BaseUnityPlugin
 
     internal static readonly string exportPath = Path.Combine(Paths.ConfigPath, MyPluginInfo.PLUGIN_NAME);
     internal static readonly string spawnGroupsPath = Path.Combine(exportPath, "SpawnGroups.json");
+    internal static readonly string spawnGroupsBackupPath = Path.Combine(exportPath, "SpawnGroups_Backup.json");
     internal static readonly string defaultSpawnGroupsPath = Path.Combine(exportPath, "Defaults", "SpawnGroups-Readonly.json");
     internal static readonly string groupsPerLevelPath = Path.Combine(exportPath, "GroupsPerLevel.json");
     internal static readonly string defaultGroupsPerLevelPath = Path.Combine(exportPath, "Defaults", "GroupsPerLevel-Readonly.json");
@@ -112,7 +113,7 @@ public class SpawnConfig : BaseUnityPlugin
         Dictionary<string, ExtendedEnemySetup> tempDict = customSetupsList.ToDictionary(obj => obj.name);
         foreach (KeyValuePair<string, ExtendedEnemySetup> source in extendedSetups) {
             if(!tempDict.ContainsKey(source.Value.name) && configManager.addMissingGroups.Value){
-                Logger.LogInfo("Adding missing entry to custom config: " + source.Value.name);
+                Logger.LogInfo("Missing group entry found: " + source.Value.name);
                 tempDict.Add(source.Value.name, source.Value);
                 updatedFile = true;
             }
@@ -120,7 +121,13 @@ public class SpawnConfig : BaseUnityPlugin
         customSetupsList = tempDict.Values.ToList();
 
         // Update the file if something was changed
-        if(updatedFile || missingProperties) File.WriteAllText(spawnGroupsPath, JsonManager.SpawnGroupsToJSON(customSetupsList));
+        if (updatedFile || missingProperties) {
+            // Save a backup of the current config
+            Logger.LogInfo("-----------------------------------------------------------");
+            Logger.LogInfo("Automatic changes have been made to SpawnConfig.json!");
+            //File.Copy(spawnGroupsPath, spawnGroupsBackupPath);
+            File.WriteAllText(spawnGroupsPath, JsonManager.SpawnGroupsToJSON(customSetupsList));
+        }
 
         // Replace vanilla values
         extendedSetups = customSetupsList.ToDictionary(obj => obj.name);

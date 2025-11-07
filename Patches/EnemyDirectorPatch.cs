@@ -158,12 +158,12 @@ public class EnemyDirectorPatch
     [HarmonyPostfix]
     public static void SetupAfterBundles(EnemyDirector __instance)
     {
-        //REPOLib.BundleLoader.OnAllBundlesLoaded += () =>
-        //{
-        //    SpawnConfig.Logger.LogInfo("All bundles have been loaded! Running setup...");
-        //    SetupOnStart(__instance);
-        //};
-        SetupOnStart(__instance);
+        REPOLib.BundleLoader.OnAllBundlesLoaded += () =>
+        {
+            SpawnConfig.Logger.LogInfo("All bundles have been loaded! Running setup...");
+            SetupOnStart(__instance);
+        };
+        //SetupOnStart(__instance);
     }
 
     public static void SetupOnStart(EnemyDirector __instance)
@@ -262,6 +262,7 @@ public class EnemyDirectorPatch
             SpawnConfig.Logger.LogInfo("Checking for invalid enemy objects and groups...");
             SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
             List<string> invalidGroups = [];
+            bool wroteToLog = false;
             foreach (KeyValuePair<string, ExtendedEnemySetup> ext in extendedSetups)
             {
                 bool invalid = false;
@@ -275,11 +276,13 @@ public class EnemyDirectorPatch
                         {
                             SpawnConfig.Logger.LogError("Unable to resolve enemy name \"" + sp + "\" in group \"" + ext.Value.name + "\"! This group will be ignored");
                             invalid = true;
+                            wroteToLog = true;
                         }
                         else
                         {
                             SpawnConfig.Logger.LogError("Unable to resolve enemy name \"" + sp + "\" in group \"" + ext.Value.name + "\"! This enemy will be removed but the group can still spawn");
                             objsToRemove.Add(index);
+                            wroteToLog = true;
                         }
                     }
                     index++;
@@ -292,11 +295,13 @@ public class EnemyDirectorPatch
                 // Group is invalid if no objects remain
                 if (ext.Value.spawnObjects.Count < 1 && !invalid)
                 {
-                    invalid = true;
                     SpawnConfig.Logger.LogError("The group \"" + ext.Value.name + "\" contains no valid enemies! This group will be ignored");
+                    invalid = true;
+                    wroteToLog = true;
                 }
                 if (invalid) invalidGroups.Add(ext.Key);
             }
+            if (!wroteToLog) SpawnConfig.Logger.LogInfo("No issues found!");
             SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
 
             // Remove invalid groups

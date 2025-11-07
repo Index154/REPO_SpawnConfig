@@ -1,9 +1,10 @@
 {
     "name": "SpawnConfig",
-    "version_number": "1.2.7",
+    "version_number": "1.2.8",
     "website_url": "https://github.com/Index154/REPO_SpawnConfig",
     "description": "Configure enemy spawning with custom groups, weights and more",
     "dependencies": [
-        "BepInEx-BepInExPack-5.4.2100"
+        "BepInEx-BepInExPack-5.4.2100",
+        "Zehs-REPOLib-3.0.1"
     ]
 }

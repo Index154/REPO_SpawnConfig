@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading;
 using Newtonsoft.Json;
 using SpawnConfig.ExtendedClasses;
 
@@ -32,6 +34,7 @@ public class JsonManager
             if (readFile != null && readFile != "")
             {
                 temp = JsonConvert.DeserializeObject<List<ExtendedEnemySetup>>(readFile);
+                // Update the file if it's missing specific newly added settings
                 if (!readFile.Contains("allowDuplicates"))
                 {
                     SpawnConfig.missingProperties = true;
@@ -84,7 +87,7 @@ public class JsonManager
                 foreach (KeyValuePair<string, float> kvp in ees.levelWeightMultipliers){
                     if (x > 0) writer.WriteRaw(", ");
                     writer.WriteRaw("\"" + kvp.Key + "\": ");
-                    writer.WriteRaw(kvp.Value.ToString("0.0"));
+                    writer.WriteRaw(kvp.Value.ToString("0.0", CultureInfo.InvariantCulture));
                     x++;
                 }
                 writer.WriteEndObject();
