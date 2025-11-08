@@ -82,10 +82,11 @@ public class JsonManager
                 writer.WriteValue(ees.difficulty3Weight);
                 writer.WritePropertyName("levelWeightMultipliers");
                 writer.WriteStartObject();
-                writer.Formatting = Formatting.None;
+                writer.Formatting = Formatting.None;    // Changing formatting so this object uses only one line
                 int x = 0;
                 foreach (KeyValuePair<string, float> kvp in ees.levelWeightMultipliers){
-                    if (x > 0) writer.WriteRaw(", ");
+                    if (x > 0) writer.WriteRaw(", ");   // To get the extra space after the comma, write this manually
+                    // If we don't write all of this as raw too then it causes various issues with the formatting and the json writer
                     writer.WriteRaw("\"" + kvp.Key + "\": ");
                     writer.WriteRaw(kvp.Value.ToString("0.0", CultureInfo.InvariantCulture));
                     x++;

@@ -84,8 +84,22 @@ public class ExtendedEnemySetup {
         if (difficulty == 2) weight = difficulty2Weight;
         else if (difficulty == 3) weight = difficulty3Weight;
 
-        if(levelWeightMultipliers.ContainsKey(currentLevelName)){
+        if (levelWeightMultipliers.ContainsKey(currentLevelName)) {
             weight = (float)(weight * levelWeightMultipliers[currentLevelName]);
+        }
+        
+        if (SpawnConfig.configManager.enableVarietyPlus.Value) {
+
+            int prevLevel = RunManager.instance.levelsCompleted;
+            int levelsToCheck = SpawnConfig.configManager.consecutiveLevelCount.Value;
+            if (prevLevel < levelsToCheck) levelsToCheck = prevLevel;
+
+            for (int i = 0; i < levelsToCheck; i++) {
+                if (previousSpawns[prevLevel - 1].Contains(name)) {
+                    weight = (float)(weight * GetLevelNumMultiplier(i + 1));
+                }
+                prevLevel--;
+            }
         }
 
         if (enemyList.Select(obj => obj.name).ToList().Contains(name)) {

@@ -357,6 +357,10 @@ public class EnemyDirectorPatch
         int groupCount2 = 0;
         int groupCount1 = 0;
         int currentLevel = RunManager.instance.levelsCompleted + 1;
+        // If a different save was loaded or the level was restarted, remove enough lists so that a new empty list is added. We remove the oldest entries in order to still have the benefit of variety based on the most recently played levels, even if the players quit mid-round or lost
+        while (previousSpawns.Count >= currentLevel) { previousSpawns.RemoveAt(0); }
+        // Add new empty list to add the spawns of the current level to
+        while (previousSpawns.Count < currentLevel) { previousSpawns.Add([]); }
         SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
 
         // Find the closest level config entry to use (current level or any previous)
@@ -524,7 +528,7 @@ public class EnemyDirectorPatch
             __instance.enemyList.Add(item);
             onlyOneSetup = true;
             __instance.totalAmount = 1;
-            SpawnConfig.Logger.LogInfo("This is a solo group! Removing all other spawns...");
+            SpawnConfig.Logger.LogInfo("This is a solo group (thisGroupOnly = true)! Removing all other spawns...");
         }
         else {
             __instance.enemyList.Add(item);

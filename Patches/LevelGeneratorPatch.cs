@@ -31,6 +31,10 @@ public class LevelGeneratorPatch {
     [HarmonyPrefix]
     public static void LogAndModifySpawns(EnemySetup enemySetup, Vector3 position, LevelGenerator __instance){
 
+        // Add it to the list of previously spawned groups for variety+ functionality
+        int currentLevelIndex = previousSpawns.Count - 1;
+        if (!previousSpawns[currentLevelIndex].Contains(enemySetup.name)) previousSpawns[currentLevelIndex].Add(enemySetup.name);
+
         // Re-add missing Director enemies
         bool gnomeCheck = false;
         bool bangCheck = false;
