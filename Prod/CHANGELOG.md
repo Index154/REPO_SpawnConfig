@@ -1,7 +1,7 @@
 ### 1.2.9
+- Renamed 'thisGroupOnly' setting in `SpawnGroups.json` to 'soloGroup' to reduce confusion a bit
 - Added a new set of options to `Index154.SpawnConfig.cfg` under the category "Variety+". The settings in this category are used to make enemy groups less likely to spawn on multiple levels in a row, increasing gameplay variety. Because the vanilla game also has a system like this in place I have decided to __enable__ these settings by default so that the mod more closely resembles the base game for players who don't change any of the settings
-- Due to the default values of these new settings, enemy groups spawned on the previous level now have their difficulty weights reduced by 40% and groups spawned two levels ago have their difficulty weights reduced by 20%
-- Please tweak the new settings to your liking in case you are not happy with these default values (you can also very easily disable the system completely)
+- Due to the default values of these new settings, enemy groups spawned on the previous level now have their difficulty weights reduced by 40% and groups spawned two levels ago have their weights reduced by 20%
 - Cleared up the wording of some logs
 
 ### 1.2.8

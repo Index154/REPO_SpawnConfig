@@ -181,7 +181,7 @@ public class EnemyDirectorPatch
             SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
             foreach (Level lvl in RunManager.instance.levels){
                 SpawnConfig.Logger.LogInfo(lvl.name.Replace("Level - ", ""));
-                levelNames.Add(lvl.name.Replace("Level - ", ""));
+                loadedLevelNames.Add(lvl.name.Replace("Level - ", ""));
             }
 
             // Go through existing EnemySetups & the contained spawnObjects and construct extended objects with default values
@@ -519,7 +519,7 @@ public class EnemyDirectorPatch
         }
 
         // Remove all other EnemySetups if only this one should spawn
-        if (extendedSetups.ContainsKey(item.name) && extendedSetups[item.name].thisGroupOnly && !onlyOneSetup) {
+        if (extendedSetups.ContainsKey(item.name) && extendedSetups[item.name].soloGroup && !onlyOneSetup) {
             List<string> names = [];
             foreach (EnemySetup enemy in __instance.enemyList) {
                 names.Add(enemy.name);
@@ -528,7 +528,7 @@ public class EnemyDirectorPatch
             __instance.enemyList.Add(item);
             onlyOneSetup = true;
             __instance.totalAmount = 1;
-            SpawnConfig.Logger.LogInfo("This is a solo group (thisGroupOnly = true)! Removing all other spawns...");
+            SpawnConfig.Logger.LogInfo("This is a solo group (soloGroup = true)! Removing all other spawns...");
         }
         else {
             __instance.enemyList.Add(item);

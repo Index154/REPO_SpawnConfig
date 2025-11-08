@@ -13,7 +13,7 @@ public class ListManager {
     public static List<int> difficulty1Counts = [];
     public static List<int> difficulty2Counts = [];
     public static List<int> difficulty3Counts = [];
-    public static List<string> levelNames = [];
+    public static List<string> loadedLevelNames = [];
     public static List<int> levelNumbers = [];
 
     public static double GetLevelNumMultiplier(int levelsAgo){

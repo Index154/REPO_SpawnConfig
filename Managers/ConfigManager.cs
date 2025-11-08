@@ -30,7 +30,7 @@ public class ConfigManager {
 
         enableVarietyPlus = configFile.Bind("Variety+", "Enable Variety+", true, new ConfigDescription("Set this to false to completely disable all the settings & systems in the Variety+ category"));
 
-        consecutiveLevelCount = configFile.Bind("Variety+", "Consecutive level count", 2, new ConfigDescription("How many previous levels to take into account for applying the consecutive level weight multipliers. The min multiplier below applies to groups spawned on the most recent level and the max multiplier applies to the least recent (2 levels ago by default)", new AcceptableValueRange<int>(2, 10), System.Array.Empty<object>()));
+        consecutiveLevelCount = configFile.Bind("Variety+", "Consecutive level count", 2, new ConfigDescription("How many previous levels to take into account for applying the consecutive level weight multipliers. The min multiplier applies to groups spawned on the most recent level and the max multiplier applies to the least recent (equal to this setting)", new AcceptableValueRange<int>(2, 10), System.Array.Empty<object>()));
 
         consecutiveWeightMultiplierMin = configFile.Bind("Variety+", "Consecutive level weight multiplier min", 0.6, new ConfigDescription("If an enemy group has spawned exactly one level ago, its weights will be multiplied by this number. This value should be lower than or equal to the max multiplier"));
 

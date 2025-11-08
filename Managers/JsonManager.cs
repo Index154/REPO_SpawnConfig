@@ -93,8 +93,8 @@ public class JsonManager
                 }
                 writer.WriteEndObject();
                 writer.Formatting = Formatting.Indented;
-                writer.WritePropertyName("thisGroupOnly");
-                writer.WriteValue(ees.thisGroupOnly);
+                writer.WritePropertyName("soloGroup");
+                writer.WriteValue(ees.soloGroup);
                 writer.WritePropertyName("allowDuplicates");
                 writer.WriteValue(ees.allowDuplicates);
                 writer.WritePropertyName("alterAmountChance");

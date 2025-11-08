@@ -21,7 +21,8 @@ public class ExtendedEnemySetup {
     public float difficulty2Weight = 0.0f;
     public float difficulty3Weight = 0.0f;
     public Dictionary<string, float> levelWeightMultipliers = [];
-    public bool thisGroupOnly = false;
+    public bool thisGroupOnly = false;              // Legacy support
+    public bool soloGroup = false;
     public bool allowDuplicates = true;
     public double alterAmountChance = 0.0;
     public int alterAmountMin = 0;
@@ -57,7 +58,7 @@ public class ExtendedEnemySetup {
         difficulty2Weight = (difficulty == 2) ? baseWeight : 0.0f;
         difficulty3Weight = (difficulty == 3) ? baseWeight : 0.0f;
 
-        foreach(string levelName in levelNames){
+        foreach(string levelName in loadedLevelNames){
             if(!levelWeightMultipliers.ContainsKey(levelName)) levelWeightMultipliers.Add(levelName, 1.0f);
         }
     }
@@ -146,15 +147,20 @@ public class ExtendedEnemySetup {
             this.maxLevel = 0;
             changedSomething = true;
         }
+        if (this.thisGroupOnly) {
+            this.soloGroup = true;
+            this.thisGroupOnly = false;
+            changedSomething = true;
+        }
 
-        // Remove unused levels if enabled in config
+        // Remove unused level weight multipliers if enabled in config
         if (SpawnConfig.configManager.removeUnloadedLevelWeights.Value)
         {
             Dictionary<string, float> newTemp = [];
             bool removedEntry = false;
             foreach (KeyValuePair<string, float> kvp in levelWeightMultipliers)
             {
-                if (!levelNames.Contains(kvp.Key)) {
+                if (!loadedLevelNames.Contains(kvp.Key)) {
                     changedSomething = true;
                     removedEntry = true;
                 }else{
@@ -164,8 +170,8 @@ public class ExtendedEnemySetup {
             if (removedEntry) levelWeightMultipliers = newTemp;
         }
         
-        // Add all loaded levels to the config
-        foreach(string levelName in levelNames){
+        // Add all loaded levels to the multipliers list
+        foreach(string levelName in loadedLevelNames){
             if (!levelWeightMultipliers.ContainsKey(levelName))
             {
                 levelWeightMultipliers.Add(levelName, 1.0f);
