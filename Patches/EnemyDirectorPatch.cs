@@ -3,6 +3,7 @@ using HarmonyLib;
 using SpawnConfig.ExtendedClasses;
 using static SpawnConfig.ListManager;
 using UnityEngine;
+using System.Linq;
 
 namespace SpawnConfig.Patches;
 
@@ -263,6 +264,7 @@ public class EnemyDirectorPatch
             SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
             List<string> invalidGroups = [];
             bool wroteToLog = false;
+            string justLogged = "";
             foreach (KeyValuePair<string, ExtendedEnemySetup> ext in extendedSetups)
             {
                 bool invalid = false;
@@ -274,16 +276,17 @@ public class EnemyDirectorPatch
                     {
                         if (SpawnConfig.configManager.ignoreInvalidGroups.Value)
                         {
-                            SpawnConfig.Logger.LogError("Unable to resolve enemy name \"" + sp + "\" in group \"" + ext.Value.name + "\"! This group will be ignored");
+                            if (justLogged != sp + ext.Value.name) SpawnConfig.Logger.LogError("Unable to resolve enemy name \"" + sp + "\" in group \"" + ext.Value.name + "\"! This group will be ignored");
                             invalid = true;
                             wroteToLog = true;
                         }
                         else
                         {
-                            SpawnConfig.Logger.LogError("Unable to resolve enemy name \"" + sp + "\" in group \"" + ext.Value.name + "\"! This enemy will be removed but the group can still spawn");
+                            if (justLogged != sp + ext.Value.name) SpawnConfig.Logger.LogError("Unable to resolve enemy name \"" + sp + "\" in group \"" + ext.Value.name + "\"! This enemy will be removed but the group can still spawn");
                             objsToRemove.Add(index);
                             wroteToLog = true;
                         }
+                        justLogged = sp + ext.Value.name;
                     }
                     index++;
                 }
@@ -542,6 +545,24 @@ public class EnemyDirectorPatch
     {
         SpawnConfig.Logger.LogInfo("Spawned a total of [" + enemySpawnCount + "] enemy objects");
         SpawnConfig.Logger.LogInfo("-----------------------------------------------------------");
+    }
+
+    [HarmonyPatch("FirstSpawnPointAdd")]
+    [HarmonyPrefix]
+    public static void DebugSpecificIssue(EnemyParent _enemyParent, EnemyDirector __instance)
+    {
+        if(_enemyParent == null) {SpawnConfig.Logger.LogError("enemyParent is null");}
+        if(__instance.enemyFirstSpawnPoints == null) {SpawnConfig.Logger.LogError("enemyFirstSpawnPoints is null");}
+        if(SemiFunc.LevelPointsGetAll() == null) {SpawnConfig.Logger.LogError("levelPoints is null");}
+        if(LevelGenerator.Instance.LevelPathTruck == null) {SpawnConfig.Logger.LogError("levelPathTruck is null");}
+        List<LevelPoint> list = (from x in SemiFunc.LevelPointsGetAll()
+			where !x.Truck
+			select x).ToList();
+        if(list.Count < 1) {SpawnConfig.Logger.LogError("levelPoints is empty");}
+        if(list[0] == null) {SpawnConfig.Logger.LogError("level");}
+        foreach (LevelPoint item in list){
+            if(item == null) {SpawnConfig.Logger.LogError("one of the level points is null");}
+        }
     }
     
 }
